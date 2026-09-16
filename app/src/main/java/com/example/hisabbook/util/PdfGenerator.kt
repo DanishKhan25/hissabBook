@@ -7,7 +7,6 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.hisabbook.R
 import com.example.hisabbook.data.local.entity.BusinessProfile
 import com.example.hisabbook.data.local.entity.Customer

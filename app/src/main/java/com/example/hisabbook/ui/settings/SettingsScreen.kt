@@ -419,51 +419,51 @@ fun SettingsScreen(
                 }
             }
 
-            // 4. Seed / Demo Data Card
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Rounded.Storage,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = "Demo & Seed Data",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    Text(
-                        text = "Populate or re-seed rich sample data (Customers, Inventory Items, Quotations, Bills & Payments) for Aluminium & Glass business.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    OutlinedButton(
-                        onClick = {
-                            viewModel.loadDemoData()
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Rounded.Storage, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Load Demo Data")
-                    }
-                }
-            }
+//            // 4. Seed / Demo Data Card
+//            Card(
+//                shape = RoundedCornerShape(20.dp),
+//                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+//                modifier = Modifier.fillMaxWidth()
+//            ) {
+//                Column(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(16.dp),
+//                    verticalArrangement = Arrangement.spacedBy(12.dp)
+//                ) {
+//                    Row(verticalAlignment = Alignment.CenterVertically) {
+//                        Icon(
+//                            imageVector = Icons.Rounded.Storage,
+//                            contentDescription = null,
+//                            tint = MaterialTheme.colorScheme.primary
+//                        )
+//                        Spacer(modifier = Modifier.width(10.dp))
+//                        Text(
+//                            text = "Demo & Seed Data",
+//                            style = MaterialTheme.typography.titleMedium,
+//                            fontWeight = FontWeight.Bold
+//                        )
+//                    }
+//
+//                    Text(
+//                        text = "Populate or re-seed rich sample data (Customers, Inventory Items, Quotations, Bills & Payments) for Aluminium & Glass business.",
+//                        style = MaterialTheme.typography.bodySmall,
+//                        color = MaterialTheme.colorScheme.onSurfaceVariant
+//                    )
+//
+//                    OutlinedButton(
+//                        onClick = {
+//                            viewModel.loadDemoData()
+//                        },
+//                        shape = RoundedCornerShape(12.dp),
+//                        modifier = Modifier.fillMaxWidth()
+//                    ) {
+//                        Icon(Icons.Rounded.Storage, contentDescription = null, modifier = Modifier.size(18.dp))
+//                        Spacer(modifier = Modifier.width(6.dp))
+//                        Text("Load Demo Data")
+//                    }
+//                }
+//            }
 
             // 4. About App Info Card
             Card(

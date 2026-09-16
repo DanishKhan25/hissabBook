@@ -1,129 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="120dp"
     android:height="120dp"
     android:viewportWidth="120"
     android:viewportHeight="120">
 
-    <!-- Outer Shadow -->
     <path
-        android:pathData="M30,26 L88,26 C93,26 96,29 96,34 L96,88 C96,93 93,96 88,96 L30,96 C25,96 22,93 22,88 L22,34 C22,29 25,26 30,26 Z"
-        android:fillColor="#33000000" />
+        android:fillColor="#22000000"
+        android:pathData="M30,20 L92,20 C99,20 103,24 103,31 L103,93 C103,100 99,104 92,104 L30,104 C23,104 19,100 19,93 L19,31 C19,24 23,20 30,20 Z" />
 
-    <!-- 1. Modern Ledger Book Cover (Vibrant Indigo Gradient) -->
-    <path android:pathData="M30,26 L88,26 C93,26 96,29 96,34 L96,88 C96,93 93,96 88,96 L30,96 C25,96 22,93 22,88 L22,34 C22,29 25,26 30,26 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:startX="22"
-                android:startY="26"
-                android:endX="96"
-                android:endY="96"
-                android:type="linear">
-                <item android:color="#FF3B82F6" android:offset="0.0" />
-                <item android:color="#FF2563EB" android:offset="0.5" />
-                <item android:color="#FF1D4ED8" android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
-
-    <!-- 2. Amber Gold Book Spine (Left Accent) -->
-    <path android:pathData="M22,34 C22,29 25,26 30,26 L36,26 L36,96 L30,96 C25,96 22,93 22,88 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:startX="22"
-                android:startY="26"
-                android:endX="36"
-                android:endY="96"
-                android:type="linear">
-                <item android:color="#FFF59E0B" android:offset="0.0" />
-                <item android:color="#FFD97706" android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
-
-    <!-- Gold Binder Ring Accents -->
-    <path android:pathData="M20,38 L37,38 L37,42 L20,42 Z" android:fillColor="#FFFBBF24" />
-    <path android:pathData="M20,59 L37,59 L37,63 L20,63 Z" android:fillColor="#FFFBBF24" />
-    <path android:pathData="M20,80 L37,80 L37,84 L20,84 Z" android:fillColor="#FFFBBF24" />
-
-    <!-- 3. Open Invoice Sheet Page (Clean White) -->
-    <path android:pathData="M40,30 L90,30 C92,30 93,31 93,33 L93,90 C93,92 92,93 90,93 L40,93 C38,93 37,92 37,90 L37,33 C37,31 38,30 40,30 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:startX="37"
-                android:startY="30"
-                android:endX="93"
-                android:endY="93"
-                android:type="linear">
-                <item android:color="#FFFFFF" android:offset="0.0" />
-                <item android:color="#FFF8FAFC" android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
-
-    <!-- 4. Stylized "H" Monogram Header -->
-    <!-- Left Pillar -->
-    <path android:pathData="M43,38 L49,38 L49,64 L43,64 Z" android:fillColor="#FF0F172A" />
-    <!-- Right Pillar -->
-    <path android:pathData="M56,38 L62,38 L62,64 L56,64 Z" android:fillColor="#FF2563EB" />
-    <!-- Gold / Emerald Cross Bridge Bar -->
-    <path android:pathData="M46,48 L59,48 L59,53 L46,53 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:startX="46"
-                android:startY="48"
-                android:endX="59"
-                android:endY="53"
-                android:type="linear">
-                <item android:color="#FFF59E0B" android:offset="0.0" />
-                <item android:color="#FF10B981" android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
-
-    <!-- 5. Invoice Checklist Symbol & Lines -->
-    <!-- Item 1 Checkmark (Emerald) -->
     <path
-        android:pathData="M68,40 L71,43 L77,37"
-        android:strokeWidth="2.2"
-        android:strokeColor="#FF10B981"
+        android:fillColor="#2563EB"
+        android:pathData="M28,18 L92,18 C99,18 104,23 104,30 L104,92 C104,99 99,104 92,104 L28,104 C21,104 16,99 16,92 L16,30 C16,23 21,18 28,18 Z" />
+
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M16,30 C16,23 21,18 28,18 L38,18 L38,104 L28,104 C21,104 16,99 16,92 Z" />
+
+    <path
+        android:fillColor="#F8FAFC"
+        android:pathData="M44,25 L88,25 C93,25 96,28 96,33 L96,86 C96,91 93,94 88,94 L44,94 C39,94 36,91 36,86 L36,33 C36,28 39,25 44,25 Z" />
+
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M47,39 L55,39 L55,66 L47,66 Z" />
+
+    <path
+        android:fillColor="#2563EB"
+        android:pathData="M64,39 L72,39 L72,66 L64,66 Z" />
+
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M53,50 L66,50 L66,57 L53,57 Z" />
+
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M78,42 L89,42 M78,52 L90,52 M47,76 L84,76"
+        android:strokeColor="#94A3B8"
         android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
-    <path android:pathData="M68,47 L87,47" android:strokeWidth="1.8" android:strokeColor="#FF94A3B8" android:strokeLineCap="round" />
+        android:strokeWidth="3" />
 
-    <!-- Item 2 Checkmark (Emerald) -->
     <path
-        android:pathData="M68,52 L71,55 L77,49"
-        android:strokeWidth="2.2"
-        android:strokeColor="#FF10B981"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
-    <path android:pathData="M68,59 L87,59" android:strokeWidth="1.8" android:strokeColor="#FF94A3B8" android:strokeLineCap="round" />
+        android:fillColor="#10B981"
+        android:pathData="M86,96 C93.7,96 100,89.7 100,82 C100,74.3 93.7,68 86,68 C78.3,68 72,74.3 72,82 C72,89.7 78.3,96 86,96 Z" />
 
-    <!-- Ledger Total Divider Line -->
-    <path android:pathData="M43,70 L87,70" android:strokeWidth="2" android:strokeColor="#FFCBD5E1" android:strokeLineCap="round" />
-    <path android:pathData="M43,75 L75,75" android:strokeWidth="3" android:strokeColor="#FF3B82F6" android:strokeLineCap="round" />
-
-    <!-- 6. Emerald Success Verification Badge (Bottom-Right) -->
-    <path android:pathData="M81,81 C86,81 90,77 90,72 C90,67 86,63 81,63 C76,63 72,67 72,72 C72,77 76,81 81,81 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:startX="72"
-                android:startY="63"
-                android:endX="90"
-                android:endY="81"
-                android:type="linear">
-                <item android:color="#FF34D399" android:offset="0.0" />
-                <item android:color="#FF10B981" android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
     <path
-        android:pathData="M76,72 L79.5,75.5 L86,69"
-        android:strokeWidth="2.2"
+        android:fillColor="#00000000"
+        android:pathData="M80,82 L84,86 L92,78"
         android:strokeColor="#FFFFFF"
         android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
-
+        android:strokeLineJoin="round"
+        android:strokeWidth="3.2" />
 </vector>

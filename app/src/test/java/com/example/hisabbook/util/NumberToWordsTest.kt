@@ -28,4 +28,10 @@ class NumberToWordsTest {
         val result = NumberToWords.convert(150000.0)
         assertEquals("Rupees One Lakh Fifty Thousand Only", result)
     }
+
+    @Test
+    fun testConvertToWordsCapitalized() {
+        val result = NumberToWords.convertToWordsCapitalized(16632.55)
+        assertEquals("Sixteen Thousand Six Hundred Thirty Two Rupees and Fifty Five Paise", result)
+    }
 }

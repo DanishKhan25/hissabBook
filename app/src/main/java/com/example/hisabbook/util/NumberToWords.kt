@@ -30,6 +30,29 @@ object NumberToWords {
         return result.toString()
     }
 
+    fun convertToWordsCapitalized(amount: Double): String {
+        if (amount <= 0.0) return "Zero Rupees"
+
+        val wholePart = amount.toLong()
+        val decimalPart = Math.round((amount - wholePart) * 100)
+
+        val wholeWords = convertWholeNumber(wholePart)
+        val result = StringBuilder()
+
+        if (wholePart > 0) {
+            result.append(wholeWords).append(" Rupees")
+        } else {
+            result.append("Zero Rupees")
+        }
+
+        if (decimalPart > 0) {
+            val decimalWords = convertWholeNumber(decimalPart)
+            result.append(" and ").append(decimalWords).append(" Paise")
+        }
+
+        return result.toString()
+    }
+
     private fun convertWholeNumber(number: Long): String {
         if (number == 0L) return "Zero"
 

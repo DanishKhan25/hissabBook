@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -43,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -51,6 +53,7 @@ import com.example.hisabbook.ui.viewmodel.QuotationViewModel
 import com.example.hisabbook.util.CurrencyFormatter
 import com.example.hisabbook.util.DateUtils
 import com.example.hisabbook.util.PdfGenerator
+import com.example.hisabbook.util.PdfShareHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,6 +100,36 @@ fun QuotationDetailScreen(
         return
     }
 
+    val onWhatsAppShareClick = {
+        val pdfFile = PdfGenerator.generateQuotationPdf(
+            context = context,
+            quotation = currentQuotation,
+            customer = customer,
+            businessProfile = businessProfile
+        )
+        val bName = businessProfile?.businessName?.ifBlank { "IMAGE ALUMINIUM AND GLASS" } ?: "IMAGE ALUMINIUM AND GLASS"
+        val custName = customer?.name?.ifBlank { "Customer" } ?: "Customer"
+        PdfShareHelper.shareToWhatsApp(
+            context = context,
+            file = pdfFile,
+            customerName = custName,
+            docType = "Quotation",
+            docNumber = currentQuotation.quotationNumber,
+            amount = currentQuotation.total,
+            businessName = bName
+        )
+    }
+
+    val onStandardShareClick = {
+        val pdfFile = PdfGenerator.generateQuotationPdf(
+            context = context,
+            quotation = currentQuotation,
+            customer = customer,
+            businessProfile = businessProfile
+        )
+        PdfShareHelper.sharePdf(context, pdfFile, "Quotation ${currentQuotation.quotationNumber}")
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -113,15 +146,15 @@ fun QuotationDetailScreen(
                         }
                     }
 
-                    IconButton(onClick = {
-                        val pdfFile = PdfGenerator.generateQuotationPdf(
-                            context = context,
-                            quotation = currentQuotation,
-                            customer = customer,
-                            businessProfile = businessProfile
+                    IconButton(onClick = onWhatsAppShareClick) {
+                        Icon(
+                            imageVector = Icons.Rounded.Share,
+                            contentDescription = "Share on WhatsApp",
+                            tint = Color(0xFF25D366)
                         )
-                        PdfGenerator.sharePdf(context, pdfFile, "Quotation ${currentQuotation.quotationNumber}")
-                    }) {
+                    }
+
+                    IconButton(onClick = onStandardShareClick) {
                         Icon(Icons.Rounded.Share, contentDescription = "Share PDF")
                     }
 
@@ -224,7 +257,7 @@ fun QuotationDetailScreen(
 
                     if (!customer?.address.isNullOrEmpty()) {
                         Text(
-                            text = "Address: ${customer?.address}",
+                            text = "Address: ${customer.address}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -331,23 +364,44 @@ fun QuotationDetailScreen(
                 }
             }
 
-            OutlinedButton(
-                onClick = {
-                    val pdfFile = PdfGenerator.generateQuotationPdf(
-                        context = context,
-                        quotation = currentQuotation,
-                        customer = customer,
-                        businessProfile = businessProfile
-                    )
-                    PdfGenerator.sharePdf(context, pdfFile, "Quotation ${currentQuotation.quotationNumber}")
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
+            // Prominent Action Buttons: WhatsApp + Share PDF
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Icon(Icons.Rounded.Share, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Generate & Share PDF", fontWeight = FontWeight.Bold)
+                Button(
+                    onClick = onWhatsAppShareClick,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF25D366),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Share,
+                        contentDescription = "Share via WhatsApp",
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("WhatsApp", fontWeight = FontWeight.Bold)
+                }
+
+                OutlinedButton(
+                    onClick = onStandardShareClick,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(50.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Share,
+                        contentDescription = "Share PDF",
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Share PDF", fontWeight = FontWeight.Bold)
+                }
             }
         }
     }

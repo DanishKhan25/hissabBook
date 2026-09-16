@@ -58,7 +58,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.room.util.getColumnIndexOrThrow
 import com.example.hisabbook.data.local.entity.InventoryItem
 import com.example.hisabbook.data.local.entity.StockTransaction
 import com.example.hisabbook.ui.theme.HisabBookTheme

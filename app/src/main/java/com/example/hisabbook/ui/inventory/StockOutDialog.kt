@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.hisabbook.ui.viewmodel.InventoryViewModel
 import com.example.hisabbook.util.CurrencyFormatter
+import com.example.hisabbook.util.parseCleanDouble
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -161,7 +162,7 @@ fun StockOutDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    val qty = quantityText.toDoubleOrNull()
+                    val qty = quantityText.parseCleanDouble()
                     if (qty == null || qty <= 0) {
                         qtyError = "Enter a valid quantity greater than 0"
                     } else if (selectedItem == null) {

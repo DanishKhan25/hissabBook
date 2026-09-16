@@ -52,11 +52,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.hisabbook.R
 import com.example.hisabbook.data.local.entity.Payment
 import com.example.hisabbook.ui.payment.AddPaymentDialog
 import com.example.hisabbook.ui.viewmodel.CustomerViewModel
 import com.example.hisabbook.ui.viewmodel.InvoiceViewModel
 import com.example.hisabbook.ui.viewmodel.PaymentViewModel
+import com.example.hisabbook.ui.viewmodel.SettingsViewModel
 import com.example.hisabbook.util.CurrencyFormatter
 import com.example.hisabbook.util.DateUtils
 import com.example.hisabbook.util.PdfGenerator
@@ -69,6 +71,7 @@ fun InvoiceDetailScreen(
     invoiceViewModel: InvoiceViewModel,
     paymentViewModel: PaymentViewModel,
     customerViewModel: CustomerViewModel? = null,
+    settingsViewModel: SettingsViewModel? = null,
     onBackClick: () -> Unit,
     onEditInvoiceClick: ((Long) -> Unit)? = null
 ) {
@@ -76,7 +79,7 @@ fun InvoiceDetailScreen(
     val invoice by invoiceViewModel.getInvoiceById(invoiceId).collectAsStateWithLifecycle(initialValue = null)
     val customers by invoiceViewModel.customers.collectAsStateWithLifecycle()
     val payments by invoiceViewModel.getPaymentsForInvoice(invoiceId).collectAsStateWithLifecycle(initialValue = emptyList())
-    val businessProfile by invoiceViewModel.businessProfile.collectAsStateWithLifecycle()
+    val businessProfile by (settingsViewModel?.businessProfile ?: invoiceViewModel.businessProfile).collectAsStateWithLifecycle()
 
     var showAddPaymentDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -121,16 +124,26 @@ fun InvoiceDetailScreen(
             payments = payments,
             businessProfile = businessProfile
         )
-        val bName = businessProfile?.businessName?.ifBlank { "Business Name" } ?: "Business Name"
+        val defaultName = context.getString(R.string.app_name)
+        val bName = businessProfile?.businessName?.takeIf { it.isNotBlank() } ?: defaultName
+        val bPhone = businessProfile?.phone ?: ""
         val custName = customer?.name?.ifBlank { "Customer" } ?: "Customer"
+        val custPhone = customer?.phone
+        val invDate = DateUtils.formatDate(currentInvoice.createdAt)
+
         PdfShareHelper.shareToWhatsApp(
             context = context,
             file = pdfFile,
             customerName = custName,
+            customerPhone = custPhone,
             docType = "Invoice",
             docNumber = currentInvoice.billNumber,
-            amount = currentInvoice.total,
-            businessName = bName
+            docDate = invDate,
+            totalAmount = currentInvoice.total,
+            paidAmount = totalPaid,
+            balanceDue = balanceDue,
+            businessName = bName,
+            businessPhone = bPhone
         )
     }
 

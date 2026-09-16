@@ -49,7 +49,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.hisabbook.R
 import com.example.hisabbook.ui.viewmodel.QuotationViewModel
+import com.example.hisabbook.ui.viewmodel.SettingsViewModel
 import com.example.hisabbook.util.CurrencyFormatter
 import com.example.hisabbook.util.DateUtils
 import com.example.hisabbook.util.PdfGenerator
@@ -60,6 +62,7 @@ import com.example.hisabbook.util.PdfShareHelper
 fun QuotationDetailScreen(
     quotationId: Long,
     quotationViewModel: QuotationViewModel,
+    settingsViewModel: SettingsViewModel? = null,
     onBackClick: () -> Unit,
     onInvoiceCreated: (Long) -> Unit,
     onEditQuotationClick: ((Long) -> Unit)? = null
@@ -67,7 +70,7 @@ fun QuotationDetailScreen(
     val context = LocalContext.current
     val quotation by quotationViewModel.getQuotationById(quotationId).collectAsStateWithLifecycle(initialValue = null)
     val customers by quotationViewModel.customers.collectAsStateWithLifecycle()
-    val businessProfile by quotationViewModel.businessProfile.collectAsStateWithLifecycle()
+    val businessProfile by (settingsViewModel?.businessProfile ?: quotationViewModel.businessProfile).collectAsStateWithLifecycle()
 
     var showStatusMenu by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -107,16 +110,24 @@ fun QuotationDetailScreen(
             customer = customer,
             businessProfile = businessProfile
         )
-        val bName = businessProfile?.businessName?.ifBlank { "Business Name" } ?: "Business Name"
+        val defaultName = context.getString(R.string.app_name)
+        val bName = businessProfile?.businessName?.takeIf { it.isNotBlank() } ?: defaultName
+        val bPhone = businessProfile?.phone ?: ""
         val custName = customer?.name?.ifBlank { "Customer" } ?: "Customer"
+        val custPhone = customer?.phone
+        val qtnDate = DateUtils.formatDate(currentQuotation.createdAt)
+
         PdfShareHelper.shareToWhatsApp(
             context = context,
             file = pdfFile,
             customerName = custName,
+            customerPhone = custPhone,
             docType = "Quotation",
             docNumber = currentQuotation.quotationNumber,
-            amount = currentQuotation.total,
-            businessName = bName
+            docDate = qtnDate,
+            totalAmount = currentQuotation.total,
+            businessName = bName,
+            businessPhone = bPhone
         )
     }
 

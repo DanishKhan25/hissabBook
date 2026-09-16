@@ -193,6 +193,7 @@ fun HisabBookApp(
             QuotationDetailScreen(
                 quotationId = key.quotationId,
                 quotationViewModel = quotationViewModel,
+                settingsViewModel = settingsViewModel,
                 onBackClick = { popBack() },
                 onInvoiceCreated = { createdInvoiceId ->
                     popBack()
@@ -236,6 +237,7 @@ fun HisabBookApp(
                 invoiceViewModel = invoiceViewModel,
                 paymentViewModel = paymentViewModel,
                 customerViewModel = customerViewModel,
+                settingsViewModel = settingsViewModel,
                 onBackClick = { popBack() },
                 onEditInvoiceClick = { invoiceId ->
                     backStack.add(HisabBookNavKey.CreateInvoice(invoiceIdToEdit = invoiceId))

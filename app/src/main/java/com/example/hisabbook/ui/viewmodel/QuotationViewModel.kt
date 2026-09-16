@@ -11,6 +11,7 @@ import com.example.hisabbook.data.repository.CustomerRepository
 import com.example.hisabbook.data.repository.InventoryRepository
 import com.example.hisabbook.data.repository.InvoiceRepository
 import com.example.hisabbook.data.repository.QuotationRepository
+import com.example.hisabbook.util.CurrencyFormatter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -234,5 +235,9 @@ class QuotationViewModel(
             val newId = customerRepository.insertCustomer(newCustomer)
             withContext(Dispatchers.Main) { onSuccess(newCustomer.copy(id = newId)) }
         }
+    }
+
+    fun parseCleanAmount(amountStr: String?): Double {
+        return CurrencyFormatter.parseAmount(amountStr)
     }
 }

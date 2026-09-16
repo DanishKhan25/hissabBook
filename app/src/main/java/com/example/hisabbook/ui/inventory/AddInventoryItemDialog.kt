@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.hisabbook.util.parseCleanDoubleOrDefault
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -138,9 +139,9 @@ fun AddInventoryItemDialog(
                     if (trimmedName.isBlank()) {
                         nameError = "Item name is required"
                     } else {
-                        val initQty = initialQtyText.toDoubleOrNull() ?: 0.0
-                        val minStock = minStockText.toDoubleOrNull() ?: 0.0
-                        val price = purchasePriceText.toDoubleOrNull() ?: 0.0
+                        val initQty = initialQtyText.parseCleanDoubleOrDefault(0.0)
+                        val minStock = minStockText.parseCleanDoubleOrDefault(0.0)
+                        val price = purchasePriceText.parseCleanDoubleOrDefault(0.0)
                         onSaveItem(trimmedName, unit, initQty, minStock, price) { err ->
                             nameError = err
                         }

@@ -60,6 +60,8 @@ import com.example.hisabbook.ui.customer.AddEditCustomerDialog
 import com.example.hisabbook.ui.customer.SearchableCustomerPicker
 import com.example.hisabbook.ui.viewmodel.InvoiceViewModel
 import com.example.hisabbook.util.CurrencyFormatter
+import com.example.hisabbook.util.parseCleanDouble
+import com.example.hisabbook.util.parseCleanDoubleOrDefault
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -94,13 +96,21 @@ fun CreateInvoiceScreen(
         invoiceToEdit?.billNumber ?: invoiceViewModel.generateNextBillNumber()
     }
 
+    val genericUnits = remember {
+        listOf(
+            "pcs", "kg", "meter", "feet", "sq.ft", "sq.m",
+            "box", "ltr", "doz", "packet", "bag", "set",
+            "pair", "hrs", "job", "service", "work"
+        )
+    }
+
     var lineItems by remember { mutableStateOf(listOf<InvoiceLineItem>()) }
     var itemMode by remember { mutableStateOf("INVENTORY") } // "INVENTORY" or "CUSTOM"
 
     var selectedInventoryItem by remember { mutableStateOf<InventoryItem?>(null) }
     var itemDescriptionState by remember { mutableStateOf("") }
     var unitRateState by remember { mutableStateOf("") }
-    var unitState by remember { mutableStateOf("Pcs") }
+    var unitState by remember { mutableStateOf("pcs") }
     var quantityState by remember { mutableStateOf("1") }
 
     var inventoryDropdownExpanded by remember { mutableStateOf(false) }
@@ -139,8 +149,8 @@ fun CreateInvoiceScreen(
         }
     }
 
-    val amount = amountText.toDoubleOrNull() ?: 0.0
-    val discount = discountText.toDoubleOrNull() ?: 0.0
+    val amount = amountText.parseCleanDoubleOrDefault(0.0)
+    val discount = discountText.parseCleanDoubleOrDefault(0.0)
     val total = (amount - discount).coerceAtLeast(0.0)
 
     Scaffold(
@@ -287,7 +297,13 @@ fun CreateInvoiceScreen(
                         )
                         FilterChip(
                             selected = itemMode == "CUSTOM",
-                            onClick = { itemMode = "CUSTOM" },
+                            onClick = {
+                                itemMode = "CUSTOM"
+                                selectedInventoryItem = null
+                                if (unitState.isBlank()) {
+                                    unitState = "pcs"
+                                }
+                            },
                             label = { Text("b) Custom / Manual Item") }
                         )
                     }
@@ -355,16 +371,61 @@ fun CreateInvoiceScreen(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         OutlinedTextField(
                             value = quantityState,
                             onValueChange = { quantityState = it },
-                            label = { Text("Quantity (${unitState})") },
+                            label = { Text("Quantity") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true,
                             modifier = Modifier.weight(1f)
                         )
+
+                        var unitDropdownExpanded by remember { mutableStateOf(false) }
+
+                        ExposedDropdownMenuBox(
+                            expanded = unitDropdownExpanded,
+                            onExpandedChange = { unitDropdownExpanded = it },
+                            modifier = Modifier.weight(1.2f)
+                        ) {
+                            OutlinedTextField(
+                                value = unitState,
+                                onValueChange = {
+                                    unitState = it
+                                    unitDropdownExpanded = true
+                                },
+                                label = { Text("Unit") },
+                                singleLine = true,
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitDropdownExpanded) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(MenuAnchorType.PrimaryEditable)
+                            )
+
+                            val filteredUnits = remember(unitState) {
+                                if (unitState.isBlank()) genericUnits
+                                else {
+                                    val matches = genericUnits.filter { it.contains(unitState, ignoreCase = true) }
+                                    matches.ifEmpty { genericUnits }
+                                }
+                            }
+
+                            ExposedDropdownMenu(
+                                expanded = unitDropdownExpanded,
+                                onDismissRequest = { unitDropdownExpanded = false }
+                            ) {
+                                filteredUnits.forEach { u ->
+                                    DropdownMenuItem(
+                                        text = { Text(u) },
+                                        onClick = {
+                                            unitState = u
+                                            unitDropdownExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
 
                         OutlinedTextField(
                             value = unitRateState,
@@ -372,12 +433,12 @@ fun CreateInvoiceScreen(
                             label = { Text("Unit Rate (₹)") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1.2f)
                         )
                     }
 
                     // Inventory Stock Check Warning Banner
-                    val itemQtyVal = quantityState.toDoubleOrNull() ?: 0.0
+                    val itemQtyVal = quantityState.parseCleanDoubleOrDefault(0.0)
                     val currentInventoryItem = selectedInventoryItem
                     if (itemMode == "INVENTORY" && currentInventoryItem != null && itemQtyVal > currentInventoryItem.quantity) {
                         Card(
@@ -407,7 +468,7 @@ fun CreateInvoiceScreen(
                     }
 
                     // Calculated Item Total Preview
-                    val itemRateVal = unitRateState.toDoubleOrNull() ?: 0.0
+                    val itemRateVal = unitRateState.parseCleanDoubleOrDefault(0.0)
                     val currentItemTotal = itemQtyVal * itemRateVal
 
                     if (currentItemTotal > 0) {
@@ -450,6 +511,9 @@ fun CreateInvoiceScreen(
                                 itemDescriptionState = ""
                                 unitRateState = ""
                                 quantityState = "1"
+                                if (itemMode == "CUSTOM") {
+                                    unitState = "pcs"
+                                }
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -534,7 +598,8 @@ fun CreateInvoiceScreen(
                     value = amountText,
                     onValueChange = {
                         amountText = it
-                        if (it.toDoubleOrNull() != null && it.toDouble() > 0) amountError = null
+                        val clean = it.parseCleanDouble()
+                        if (clean != null && clean > 0) amountError = null
                     },
                     label = { Text("Subtotal / Amount (₹) *") },
                     keyboardOptions = KeyboardOptions(
@@ -624,8 +689,8 @@ fun CreateInvoiceScreen(
                     // Check if there is an unadded item currently filled in form
                     var finalLineItems = lineItems
                     val currentDesc = itemDescriptionState.trim()
-                    val currentQty = quantityState.toDoubleOrNull() ?: 0.0
-                    val currentRate = unitRateState.toDoubleOrNull() ?: 0.0
+                    val currentQty = quantityState.parseCleanDoubleOrDefault(0.0)
+                    val currentRate = unitRateState.parseCleanDoubleOrDefault(0.0)
 
                     if (finalLineItems.isEmpty() && currentDesc.isNotBlank() && currentQty > 0) {
                         finalLineItems = listOf(
@@ -654,7 +719,7 @@ fun CreateInvoiceScreen(
                         descriptionError = "Please enter description"
                         isValid = false
                     }
-                    val finalAmount = amountText.toDoubleOrNull() ?: 0.0
+                    val finalAmount = amountText.parseCleanDoubleOrDefault(0.0)
                     if (finalAmount <= 0) {
                         amountError = "Enter valid amount"
                         isValid = false

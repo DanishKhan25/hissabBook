@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.hisabbook.ui.viewmodel.InventoryViewModel
 import com.example.hisabbook.util.CurrencyFormatter
+import com.example.hisabbook.util.parseCleanDouble
+import com.example.hisabbook.util.parseCleanDoubleOrDefault
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,7 +117,8 @@ fun StockInDialog(
                     value = quantityText,
                     onValueChange = {
                         quantityText = it
-                        if (it.toDoubleOrNull() != null && it.toDouble() > 0) qtyError = null
+                        val clean = it.parseCleanDouble()
+                        if (clean != null && clean > 0) qtyError = null
                     },
                     label = { Text("Quantity Added (${selectedItem?.unit ?: "units"}) *") },
                     leadingIcon = { Icon(Icons.Rounded.AddCircle, contentDescription = null) },
@@ -158,13 +161,13 @@ fun StockInDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    val qty = quantityText.toDoubleOrNull()
+                    val qty = quantityText.parseCleanDouble()
                     if (qty == null || qty <= 0) {
                         qtyError = "Enter a valid quantity greater than 0"
                     } else if (selectedItemId <= 0) {
                         qtyError = "Select a valid item"
                     } else {
-                        val price = priceText.toDoubleOrNull() ?: selectedItem?.purchasePrice ?: 0.0
+                        val price = priceText.parseCleanDoubleOrDefault(selectedItem?.purchasePrice ?: 0.0)
                         inventoryViewModel.stockIn(
                             itemId = selectedItemId,
                             quantity = qty,

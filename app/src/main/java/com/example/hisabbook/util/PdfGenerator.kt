@@ -7,6 +7,8 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.hisabbook.R
 import com.example.hisabbook.data.local.entity.BusinessProfile
 import com.example.hisabbook.data.local.entity.Customer
 import com.example.hisabbook.data.local.entity.Invoice
@@ -59,7 +61,8 @@ object PdfGenerator {
             canvas = canvas,
             docTypeTag = "BILL OF SUPPLY",
             businessProfile = businessProfile,
-            startY = currentY
+            startY = currentY,
+            context = context
         )
 
         // 2. Invoice Metadata Bar
@@ -150,7 +153,8 @@ object PdfGenerator {
             canvas = canvas,
             docTypeTag = "QUOTATION",
             businessProfile = businessProfile,
-            startY = currentY
+            startY = currentY,
+            context = context
         )
 
         // 2. Metadata Bar
@@ -232,7 +236,8 @@ object PdfGenerator {
         canvas: Canvas,
         docTypeTag: String,
         businessProfile: BusinessProfile?,
-        startY: Float
+        startY: Float,
+        context: Context? = null
     ): Float {
         var y = startY
 
@@ -278,7 +283,8 @@ object PdfGenerator {
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             isAntiAlias = true
         }
-        val businessName = businessProfile?.businessName?.ifBlank { "Business Name" } ?: "Business Name"
+        val defaultName = context?.getString(R.string.app_name) ?: "Business Name"
+        val businessName = businessProfile?.businessName?.trim()?.takeIf { it.isNotBlank() } ?: defaultName
         canvas.drawText(businessName, MARGIN, y, titlePaint)
 
         y += 15f
@@ -290,12 +296,27 @@ object PdfGenerator {
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
             isAntiAlias = true
         }
-        val subtitleStr = businessProfile?.subtitle?.ifBlank { "Business Tagline" } ?: "Business Tagline"
-        val phoneStr = businessProfile?.phone?.ifBlank { "" } ?: ""
-        val subtitleLine = if (phoneStr.isNotBlank()) "$subtitleStr  •  Mobile: $phoneStr" else subtitleStr
-        canvas.drawText(subtitleLine, MARGIN, y, subtitlePaint)
+        val subtitleStr = businessProfile?.subtitle?.trim()?.takeIf { it.isNotBlank() }
+        val phoneStr = businessProfile?.phone?.trim()?.takeIf { it.isNotBlank() }
 
-        y += 12f
+        val subtitleLine = when {
+            subtitleStr != null && phoneStr != null -> "$subtitleStr  •  Mobile: $phoneStr"
+            subtitleStr != null -> subtitleStr
+            phoneStr != null -> "Mobile: $phoneStr"
+            else -> null
+        }
+
+        if (subtitleLine != null) {
+            canvas.drawText(subtitleLine, MARGIN, y, subtitlePaint)
+            y += 12f
+        }
+
+        // 4. Address (if provided and non-empty)
+        val addressStr = businessProfile?.address?.trim()?.takeIf { it.isNotBlank() }
+        if (addressStr != null) {
+            canvas.drawText(addressStr, MARGIN, y, subtitlePaint)
+            y += 12f
+        }
 
         // 4. Solid Gold Line Separator (#C59B27)
         val goldLinePaint = Paint().apply {
@@ -685,13 +706,13 @@ object PdfGenerator {
 
         val result = mutableListOf<TableItem>()
         val tokens = raw.split(Regex("[\n,]")).map { it.trim() }.filter { it.isNotEmpty() }
-        val itemRegex = Regex("""^(.*?)\s*\(Qty:\s*([0-9.]+)\s*([A-Za-z]*)\)$""", RegexOption.IGNORE_CASE)
+        val itemRegex = Regex("""^(.*?)\s*\(Qty:\s*([0-9.,]+)\s*([A-Za-z]*)\)$""", RegexOption.IGNORE_CASE)
 
         for (token in tokens) {
             val match = itemRegex.find(token)
             if (match != null) {
                 val desc = match.groupValues[1].trim()
-                val qty = match.groupValues[2].toDoubleOrNull() ?: 1.0
+                val qty = match.groupValues[2].replace(",", "").trim().toDoubleOrNull() ?: 1.0
                 val unit = match.groupValues[3].ifBlank { "PCS" }
                 result.add(TableItem(description = desc, quantity = qty, unit = unit, rate = 0.0, amount = 0.0))
             }

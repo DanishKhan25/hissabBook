@@ -59,6 +59,8 @@ import com.example.hisabbook.ui.customer.AddEditCustomerDialog
 import com.example.hisabbook.ui.customer.SearchableCustomerPicker
 import com.example.hisabbook.ui.viewmodel.QuotationViewModel
 import com.example.hisabbook.util.CurrencyFormatter
+import com.example.hisabbook.util.parseCleanDouble
+import com.example.hisabbook.util.parseCleanDoubleOrDefault
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -75,6 +77,14 @@ fun CreateQuotationScreen(
 
     val quotationToEdit = remember(quotationIdToEdit, allQuotations) {
         quotationIdToEdit?.let { qId -> allQuotations.find { it.id == qId } }
+    }
+
+    val genericUnits = remember {
+        listOf(
+            "pcs", "kg", "meter", "feet", "sq.ft", "sq.m",
+            "box", "ltr", "doz", "packet", "bag", "set",
+            "pair", "hrs", "job", "service", "work"
+        )
     }
 
     var selectedCustomerId by remember(preSelectedCustomerId, quotationToEdit) {
@@ -100,7 +110,7 @@ fun CreateQuotationScreen(
     var selectedInventoryItem by remember { mutableStateOf<InventoryItem?>(null) }
     var itemDescriptionState by remember { mutableStateOf("") }
     var unitRateState by remember { mutableStateOf("") }
-    var unitState by remember { mutableStateOf("Pcs") }
+    var unitState by remember { mutableStateOf("pcs") }
     var itemQuantityState by remember { mutableStateOf("1") }
 
     var inventoryDropdownExpanded by remember { mutableStateOf(false) }
@@ -123,9 +133,9 @@ fun CreateQuotationScreen(
         }
     }
 
-    val quantity = quantityText.toDoubleOrNull() ?: 1.0
-    val rate = rateText.toDoubleOrNull() ?: 0.0
-    val discount = discountText.toDoubleOrNull() ?: 0.0
+    val quantity = quantityText.parseCleanDoubleOrDefault(1.0)
+    val rate = rateText.parseCleanDoubleOrDefault(0.0)
+    val discount = discountText.parseCleanDoubleOrDefault(0.0)
     val total = ((quantity * rate) - discount).coerceAtLeast(0.0)
 
     Scaffold(
@@ -236,7 +246,13 @@ fun CreateQuotationScreen(
                         )
                         FilterChip(
                             selected = itemMode == "CUSTOM",
-                            onClick = { itemMode = "CUSTOM" },
+                            onClick = {
+                                itemMode = "CUSTOM"
+                                selectedInventoryItem = null
+                                if (unitState.isBlank()) {
+                                    unitState = "pcs"
+                                }
+                            },
                             label = { Text("Custom / Manual Work") }
                         )
                     }
@@ -304,7 +320,7 @@ fun CreateQuotationScreen(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         OutlinedTextField(
                             value = itemQuantityState,
@@ -315,19 +331,64 @@ fun CreateQuotationScreen(
                             modifier = Modifier.weight(1f)
                         )
 
+                        var unitDropdownExpanded by remember { mutableStateOf(false) }
+
+                        ExposedDropdownMenuBox(
+                            expanded = unitDropdownExpanded,
+                            onExpandedChange = { unitDropdownExpanded = it },
+                            modifier = Modifier.weight(1.2f)
+                        ) {
+                            OutlinedTextField(
+                                value = unitState,
+                                onValueChange = {
+                                    unitState = it
+                                    unitDropdownExpanded = true
+                                },
+                                label = { Text("Unit") },
+                                singleLine = true,
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitDropdownExpanded) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(MenuAnchorType.PrimaryEditable)
+                            )
+
+                            val filteredUnits = remember(unitState) {
+                                if (unitState.isBlank()) genericUnits
+                                else {
+                                    val matches = genericUnits.filter { it.contains(unitState, ignoreCase = true) }
+                                    matches.ifEmpty { genericUnits }
+                                }
+                            }
+
+                            ExposedDropdownMenu(
+                                expanded = unitDropdownExpanded,
+                                onDismissRequest = { unitDropdownExpanded = false }
+                            ) {
+                                filteredUnits.forEach { u ->
+                                    DropdownMenuItem(
+                                        text = { Text(u) },
+                                        onClick = {
+                                            unitState = u
+                                            unitDropdownExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
                         OutlinedTextField(
                             value = unitRateState,
                             onValueChange = { unitRateState = it },
-                            label = { Text("Rate / Price (₹)") },
+                            label = { Text("Rate (₹)") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1.2f)
                         )
                     }
 
                     // Calculated Item Total Preview
-                    val itemQtyVal = itemQuantityState.toDoubleOrNull() ?: 0.0
-                    val itemRateVal = unitRateState.toDoubleOrNull() ?: 0.0
+                    val itemQtyVal = itemQuantityState.parseCleanDoubleOrDefault(0.0)
+                    val itemRateVal = unitRateState.parseCleanDoubleOrDefault(0.0)
                     val currentItemTotal = itemQtyVal * itemRateVal
 
                     if (currentItemTotal > 0) {
@@ -370,6 +431,9 @@ fun CreateQuotationScreen(
                                 itemDescriptionState = ""
                                 unitRateState = ""
                                 itemQuantityState = "1"
+                                if (itemMode == "CUSTOM") {
+                                    unitState = "pcs"
+                                }
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -465,7 +529,8 @@ fun CreateQuotationScreen(
                     value = rateText,
                     onValueChange = {
                         rateText = it
-                        if (it.toDoubleOrNull() != null && it.toDouble() > 0) rateError = null
+                        val clean = it.parseCleanDouble()
+                        if (clean != null && clean > 0) rateError = null
                     },
                     label = { Text("Rate / Amount (₹) *") },
                     keyboardOptions = KeyboardOptions(

@@ -40,6 +40,7 @@ import com.example.hisabbook.ui.viewmodel.CustomerViewModel
 import com.example.hisabbook.ui.viewmodel.PaymentViewModel
 import com.example.hisabbook.util.CurrencyFormatter
 import com.example.hisabbook.util.DateUtils
+import com.example.hisabbook.util.parseCleanDouble
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -175,7 +176,8 @@ fun AddPaymentDialog(
                     value = amountText,
                     onValueChange = {
                         amountText = it
-                        if (it.toDoubleOrNull() != null && it.toDouble() > 0) amountError = null
+                        val clean = it.parseCleanDouble()
+                        if (clean != null && clean > 0) amountError = null
                     },
                     label = { Text("Payment Amount (₹) *") },
                     leadingIcon = { Icon(Icons.Rounded.AttachMoney, contentDescription = null) },
@@ -227,7 +229,7 @@ fun AddPaymentDialog(
             Button(
                 onClick = {
                     amountError = null
-                    val amount = amountText.toDoubleOrNull()
+                    val amount = amountText.parseCleanDouble()
                     if (amount == null || amount <= 0) {
                         amountError = "Payment amount must be greater than ₹0"
                     } else if (selectedCustomerId <= 0) {

@@ -390,6 +390,7 @@ fun InvoiceDetailScreen(
             paymentViewModel = paymentViewModel,
             customerViewModel = customerViewModel,
             preSelectedCustomerId = currentInvoice.customerId,
+            preSelectedBillId = currentInvoice.id,
             onDismissRequest = { showAddPaymentDialog = false }
         )
     }

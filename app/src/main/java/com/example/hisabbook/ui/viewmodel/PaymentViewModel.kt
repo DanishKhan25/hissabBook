@@ -35,8 +35,14 @@ class PaymentViewModel(
     private val _userMessage = MutableStateFlow<String?>(null)
     val userMessage: StateFlow<String?> = _userMessage.asStateFlow()
 
+    val allPayments: StateFlow<List<Payment>> = paymentRepository.allPayments.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList()
+    )
+
     val paymentsWithDetails: StateFlow<List<PaymentDisplayItem>> = combine(
-        paymentRepository.allPayments,
+        allPayments,
         customerRepository.allCustomers,
         invoiceRepository.allInvoices
     ) { payments, customers, invoices ->
@@ -91,6 +97,20 @@ class PaymentViewModel(
         }
 
         viewModelScope.launch(Dispatchers.IO) {
+            if (billId == null) {
+                val unpaidInvoices = invoiceRepository.getInvoicesForCustomer(customerId)
+                    .firstOrNull()
+                    ?.filter { it.status == "UNPAID" || it.status == "PARTIALLY_PAID" }
+                    .orEmpty()
+
+                if (unpaidInvoices.isNotEmpty()) {
+                    val err = "Please select the bill this payment should clear"
+                    _userMessage.value = err
+                    withContext(Dispatchers.Main) { onError?.invoke(err) }
+                    return@launch
+                }
+            }
+
             val effectiveBillId = billId ?: 0L
             if (effectiveBillId > 0) {
                 val invoice = invoiceRepository.getInvoiceByIdOneShot(effectiveBillId)

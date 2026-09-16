@@ -48,9 +48,11 @@ fun AddPaymentDialog(
     paymentViewModel: PaymentViewModel,
     customerViewModel: CustomerViewModel? = null,
     preSelectedCustomerId: Long? = null,
+    preSelectedBillId: Long? = null,
     onDismissRequest: () -> Unit
 ) {
     val customersWithBalance = customerViewModel?.customersWithBalance?.collectAsStateWithLifecycle()?.value ?: emptyList()
+    val payments = paymentViewModel.allPayments.collectAsStateWithLifecycle().value
 
     var selectedCustomerId by remember(preSelectedCustomerId) {
         mutableLongStateOf(preSelectedCustomerId ?: customersWithBalance.firstOrNull()?.customer?.id ?: 0L)
@@ -59,7 +61,9 @@ fun AddPaymentDialog(
     val unpaidInvoices = paymentViewModel.getUnpaidInvoicesForCustomer(selectedCustomerId)
         .collectAsStateWithLifecycle().value
 
-    var selectedBillId by remember(selectedCustomerId) { mutableStateOf<Long?>(null) }
+    var selectedBillId by remember(selectedCustomerId, preSelectedBillId) {
+        mutableStateOf(preSelectedBillId)
+    }
     var amountText by remember { mutableStateOf("") }
     var paymentMode by remember { mutableStateOf("CASH") }
     var notes by remember { mutableStateOf("") }
@@ -70,6 +74,21 @@ fun AddPaymentDialog(
     var amountError by remember { mutableStateOf<String?>(null) }
 
     val paymentModes = listOf("CASH", "UPI", "BANK_TRANSFER", "CHEQUE", "OTHER")
+    val paymentsByBill = remember(payments) { payments.groupBy { it.billId } }
+
+    fun outstandingForBill(billId: Long): Double {
+        val invoice = unpaidInvoices.find { it.id == billId } ?: return 0.0
+        val paid = paymentsByBill[billId]?.sumOf { it.amount } ?: 0.0
+        return (invoice.total - paid).coerceAtLeast(0.0)
+    }
+
+    LaunchedEffect(selectedBillId, unpaidInvoices, payments) {
+        val billId = selectedBillId ?: return@LaunchedEffect
+        val outstanding = outstandingForBill(billId)
+        if (outstanding > 0.0) {
+            amountText = CurrencyFormatter.formatAmountOnly(outstanding)
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -133,14 +152,14 @@ fun AddPaymentDialog(
                     onExpandedChange = { billDropdownExpanded = it }
                 ) {
                     val selectedBillNumber = unpaidInvoices.find { it.id == selectedBillId }?.let {
-                        "Bill #${it.billNumber} (${CurrencyFormatter.formatCurrency(it.total)})"
+                        "Bill #${it.billNumber} (Pending: ${CurrencyFormatter.formatCurrency(outstandingForBill(it.id))})"
                     } ?: "General Payment (No specific bill)"
 
                     OutlinedTextField(
                         value = selectedBillNumber,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Link to Bill (Optional)") },
+                        label = { Text(if (unpaidInvoices.isNotEmpty()) "Link to Bill *" else "Link to Bill (Optional)") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = billDropdownExpanded) },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -159,11 +178,12 @@ fun AddPaymentDialog(
                             }
                         )
                         unpaidInvoices.forEach { invoice ->
+                            val outstanding = outstandingForBill(invoice.id)
                             DropdownMenuItem(
-                                text = { Text("Bill #${invoice.billNumber} - Total: ${CurrencyFormatter.formatCurrency(invoice.total)}") },
+                                text = { Text("Bill #${invoice.billNumber} - Pending: ${CurrencyFormatter.formatCurrency(outstanding)}") },
                                 onClick = {
                                     selectedBillId = invoice.id
-                                    amountText = CurrencyFormatter.formatAmountOnly(invoice.total)
+                                    amountText = CurrencyFormatter.formatAmountOnly(outstanding)
                                     billDropdownExpanded = false
                                 }
                             )
@@ -234,6 +254,8 @@ fun AddPaymentDialog(
                         amountError = "Payment amount must be greater than ₹0"
                     } else if (selectedCustomerId <= 0) {
                         amountError = "Please select a valid customer"
+                    } else if (selectedBillId == null && unpaidInvoices.isNotEmpty()) {
+                        amountError = "Please select the bill this payment should clear"
                     } else {
                         paymentViewModel.recordPayment(
                             customerId = selectedCustomerId,

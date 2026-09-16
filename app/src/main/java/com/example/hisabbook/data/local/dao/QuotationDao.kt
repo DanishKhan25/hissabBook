@@ -26,6 +26,9 @@ interface QuotationDao {
     @Query("SELECT * FROM quotations WHERE customerId = :customerId ORDER BY createdAt DESC")
     fun getQuotationsForCustomer(customerId: Long): Flow<List<Quotation>>
 
+    @Query("SELECT MAX(id) FROM quotations")
+    suspend fun getMaxId(): Long?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertQuotation(quotation: Quotation): Long
 

@@ -1,9 +1,24 @@
 package com.example.hisabbook.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "quotations")
+@Entity(
+    tableName = "quotations",
+    foreignKeys = [
+        ForeignKey(
+            entity = Customer::class,
+            parentColumns = ["id"],
+            childColumns = ["customerId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [
+        Index(value = ["customerId"])
+    ]
+)
 data class Quotation(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

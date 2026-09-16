@@ -7,6 +7,8 @@ import com.example.hisabbook.data.local.entity.Quotation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import java.util.Calendar
+import java.util.Locale
 
 class QuotationRepository(
     private val quotationDao: QuotationDao,
@@ -19,6 +21,12 @@ class QuotationRepository(
     fun getQuotationsForCustomer(customerId: Long): Flow<List<Quotation>> =
         quotationDao.getQuotationsForCustomer(customerId)
 
+    suspend fun generateNextQuotationNumber(): String = withContext(Dispatchers.IO) {
+        val maxId = quotationDao.getMaxId() ?: 0L
+        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+        String.format(Locale.getDefault(), "Q-%d-%03d", currentYear, maxId + 1)
+    }
+
     suspend fun createQuotation(
         quotationNumber: String,
         customerId: Long,
@@ -26,26 +34,40 @@ class QuotationRepository(
         quantity: Double,
         amount: Double,
         discount: Double,
-        notes: String = ""
+        notes: String = "",
+        status: String = "Draft"
     ): Long = withContext(Dispatchers.IO) {
-        val total = (quantity * amount - discount).coerceAtLeast(0.0)
+        val validQuantity = quantity.coerceAtLeast(0.0)
+        val validAmount = amount.coerceAtLeast(0.0)
+        val validDiscount = discount.coerceAtLeast(0.0)
+        val total = (validQuantity * validAmount - validDiscount).coerceAtLeast(0.0)
         val quotation = Quotation(
             quotationNumber = quotationNumber,
             customerId = customerId,
             description = description,
-            quantity = quantity,
-            amount = amount,
-            discount = discount,
+            quantity = validQuantity,
+            amount = validAmount,
+            discount = validDiscount,
             total = total,
-            status = "PENDING",
+            status = status,
             notes = notes
         )
         quotationDao.insertQuotation(quotation)
     }
 
     suspend fun updateQuotation(quotation: Quotation) = withContext(Dispatchers.IO) {
-        val total = (quotation.quantity * quotation.amount - quotation.discount).coerceAtLeast(0.0)
-        quotationDao.updateQuotation(quotation.copy(total = total))
+        val validQuantity = quotation.quantity.coerceAtLeast(0.0)
+        val validAmount = quotation.amount.coerceAtLeast(0.0)
+        val validDiscount = quotation.discount.coerceAtLeast(0.0)
+        val total = (validQuantity * validAmount - validDiscount).coerceAtLeast(0.0)
+        quotationDao.updateQuotation(
+            quotation.copy(
+                quantity = validQuantity,
+                amount = validAmount,
+                discount = validDiscount,
+                total = total
+            )
+        )
     }
 
     suspend fun deleteQuotation(quotation: Quotation) = withContext(Dispatchers.IO) {

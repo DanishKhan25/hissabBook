@@ -106,8 +106,8 @@ class QuotationViewModel(
 
     fun generateNextQuotationNumber(): String {
         val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-        val count = allQuotations.value.size + 1
-        return String.format(Locale.getDefault(), "Q-%d-%03d", currentYear, count)
+        val maxId = allQuotations.value.maxOfOrNull { it.id } ?: 0L
+        return String.format(Locale.getDefault(), "Q-%d-%03d", currentYear, maxId + 1)
     }
 
     fun getQuotationById(id: Long) = quotationRepository.getQuotationById(id)
@@ -124,17 +124,12 @@ class QuotationViewModel(
         status: String = "Draft",
         onSuccess: (Long) -> Unit
     ) {
+        val validQuantity = quantity.coerceAtLeast(0.0)
+        val validAmount = amount.coerceAtLeast(0.0)
+        val validDiscount = discount.coerceAtLeast(0.0)
+
         viewModelScope.launch(Dispatchers.IO) {
-            val qNum = generateNextQuotationNumber()
-            val id = quotationRepository.createQuotation(
-                quotationNumber = qNum,
-                customerId = customerId,
-                description = description,
-                quantity = quantity,
-                amount = amount,
-                discount = discount,
-                notes = notes
-            )
+            val qNum = quotationRepository.generateNextQuotationNumber()
             val savedStatus = when (status.uppercase()) {
                 "DRAFT" -> "Draft"
                 "SENT" -> "Sent"
@@ -142,7 +137,16 @@ class QuotationViewModel(
                 "REJECTED", "DECLINED" -> "Rejected"
                 else -> status
             }
-            quotationRepository.updateStatus(id, savedStatus)
+            val id = quotationRepository.createQuotation(
+                quotationNumber = qNum,
+                customerId = customerId,
+                description = description,
+                quantity = validQuantity,
+                amount = validAmount,
+                discount = validDiscount,
+                notes = notes,
+                status = savedStatus
+            )
             withContext(Dispatchers.Main) { onSuccess(id) }
         }
     }
@@ -158,15 +162,19 @@ class QuotationViewModel(
         status: String = "Draft",
         onSuccess: () -> Unit
     ) {
+        val validQuantity = quantity.coerceAtLeast(0.0)
+        val validAmount = amount.coerceAtLeast(0.0)
+        val validDiscount = discount.coerceAtLeast(0.0)
+
         viewModelScope.launch(Dispatchers.IO) {
             val existing = quotationRepository.getQuotationById(id).firstOrNull()
             if (existing != null) {
                 val updated = existing.copy(
                     customerId = customerId,
                     description = description,
-                    quantity = quantity,
-                    amount = amount,
-                    discount = discount,
+                    quantity = validQuantity,
+                    amount = validAmount,
+                    discount = validDiscount,
                     notes = notes,
                     status = status
                 )

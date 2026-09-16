@@ -32,7 +32,7 @@ import kotlinx.coroutines.withContext
         StockTransaction::class,
         BusinessProfile::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

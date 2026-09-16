@@ -11,13 +11,9 @@ import androidx.compose.material.icons.rounded.AttachMoney
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -33,6 +29,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.hisabbook.data.local.entity.InventoryItem
 import com.example.hisabbook.ui.viewmodel.InventoryViewModel
 import com.example.hisabbook.util.CurrencyFormatter
 import com.example.hisabbook.util.parseCleanDouble
@@ -48,13 +45,12 @@ fun StockInDialog(
     val items = inventoryViewModel.inventoryItems.collectAsStateWithLifecycle().value
 
     var selectedItemId by remember(preSelectedItem) {
-        mutableLongStateOf(preSelectedItem ?: items.firstOrNull()?.id ?: 0L)
+        mutableLongStateOf(preSelectedItem ?: 0L)
     }
 
     LaunchedEffect(preSelectedItem, items) {
         selectedItemId = preSelectedItem
             ?: selectedItemId.takeIf { it > 0 }
-            ?: items.firstOrNull()?.id
             ?: 0L
     }
 
@@ -66,8 +62,8 @@ fun StockInDialog(
     }
     var supplierNotes by remember { mutableStateOf("") }
 
-    var itemDropdownExpanded by remember { mutableStateOf(false) }
     var qtyError by remember { mutableStateOf<String?>(null) }
+    var itemError by remember { mutableStateOf<String?>(null) }
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -79,38 +75,24 @@ fun StockInDialog(
                     .padding(vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Item Selector (if multiple items available)
-                if (preSelectedItem == null && items.isNotEmpty()) {
-                    ExposedDropdownMenuBox(
-                        expanded = itemDropdownExpanded,
-                        onExpandedChange = { itemDropdownExpanded = it }
-                    ) {
-                        OutlinedTextField(
-                            value = selectedItem?.name ?: "Select Item",
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Select Inventory Item *") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = itemDropdownExpanded) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                if (preSelectedItem == null) {
+                    SearchableInventoryPicker(
+                        inventoryItems = items,
+                        selectedItem = selectedItem,
+                        onItemSelected = { item: InventoryItem ->
+                            selectedItemId = item.id
+                            priceText = CurrencyFormatter.formatAmountOnly(item.purchasePrice)
+                            itemError = null
+                        },
+                        label = "Select Inventory Item *",
+                        placeholder = if (items.isEmpty()) "No inventory items available" else "Type item name"
+                    )
+                    itemError?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
                         )
-
-                        ExposedDropdownMenu(
-                            expanded = itemDropdownExpanded,
-                            onDismissRequest = { itemDropdownExpanded = false }
-                        ) {
-                            items.forEach { item ->
-                                DropdownMenuItem(
-                                    text = { Text("${item.name} (${CurrencyFormatter.formatAmountOnly(item.quantity)} ${item.unit})") },
-                                    onClick = {
-                                        selectedItemId = item.id
-                                        priceText = CurrencyFormatter.formatAmountOnly(item.purchasePrice)
-                                        itemDropdownExpanded = false
-                                    }
-                                )
-                            }
-                        }
                     }
                 } else if (selectedItem != null) {
                     Text(
@@ -173,7 +155,7 @@ fun StockInDialog(
                     if (qty == null || qty <= 0) {
                         qtyError = "Enter a valid quantity greater than 0"
                     } else if (selectedItemId <= 0) {
-                        qtyError = "Select a valid item"
+                        itemError = "Select a valid item"
                     } else {
                         val price = priceText.parseCleanDoubleOrDefault(selectedItem?.purchasePrice ?: 0.0)
                         inventoryViewModel.stockIn(

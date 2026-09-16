@@ -2,7 +2,9 @@ package com.example.hisabbook.data.repository
 
 import com.example.hisabbook.data.local.dao.PaymentDao
 import com.example.hisabbook.data.local.entity.Payment
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 
 class PaymentRepository(
     private val paymentDao: PaymentDao,
@@ -22,7 +24,7 @@ class PaymentRepository(
         amount: Double,
         paymentMode: String,
         notes: String = ""
-    ): Long {
+    ): Long = withContext(Dispatchers.IO) {
         val payment = Payment(
             billId = billId,
             customerId = customerId,
@@ -32,15 +34,15 @@ class PaymentRepository(
         )
         val paymentId = paymentDao.insertPayment(payment)
         invoiceRepository.recalculateInvoiceStatus(billId)
-        return paymentId
+        paymentId
     }
 
-    suspend fun updatePayment(payment: Payment) {
+    suspend fun updatePayment(payment: Payment) = withContext(Dispatchers.IO) {
         paymentDao.updatePayment(payment)
         invoiceRepository.recalculateInvoiceStatus(payment.billId)
     }
 
-    suspend fun deletePayment(payment: Payment) {
+    suspend fun deletePayment(payment: Payment) = withContext(Dispatchers.IO) {
         paymentDao.deletePayment(payment)
         invoiceRepository.recalculateInvoiceStatus(payment.billId)
     }

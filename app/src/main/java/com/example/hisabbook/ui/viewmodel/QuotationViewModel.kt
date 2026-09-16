@@ -11,6 +11,7 @@ import com.example.hisabbook.data.repository.CustomerRepository
 import com.example.hisabbook.data.repository.InventoryRepository
 import com.example.hisabbook.data.repository.InvoiceRepository
 import com.example.hisabbook.data.repository.QuotationRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Calendar
 import java.util.Locale
 
@@ -121,7 +123,7 @@ class QuotationViewModel(
         status: String = "Draft",
         onSuccess: (Long) -> Unit
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val qNum = generateNextQuotationNumber()
             val id = quotationRepository.createQuotation(
                 quotationNumber = qNum,
@@ -140,7 +142,7 @@ class QuotationViewModel(
                 else -> status
             }
             quotationRepository.updateStatus(id, savedStatus)
-            onSuccess(id)
+            withContext(Dispatchers.Main) { onSuccess(id) }
         }
     }
 
@@ -155,7 +157,7 @@ class QuotationViewModel(
         status: String = "Draft",
         onSuccess: () -> Unit
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val existing = quotationRepository.getQuotationById(id).firstOrNull()
             if (existing != null) {
                 val updated = existing.copy(
@@ -168,32 +170,32 @@ class QuotationViewModel(
                     status = status
                 )
                 quotationRepository.updateQuotation(updated)
-                onSuccess()
+                withContext(Dispatchers.Main) { onSuccess() }
             }
         }
     }
 
     fun updateQuotationStatus(quotationId: Long, newStatus: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             quotationRepository.updateStatus(quotationId, newStatus)
         }
     }
 
     fun convertToInvoice(quotationId: Long, onSuccess: (Long) -> Unit) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val currentInvoices = invoiceRepository.allInvoices.firstOrNull() ?: emptyList()
             val currentYear = Calendar.getInstance().get(Calendar.YEAR)
             val billNum = String.format(Locale.getDefault(), "B-%d-%03d", currentYear, currentInvoices.size + 1)
 
             val invoiceId = quotationRepository.convertToInvoice(quotationId, billNum)
             if (invoiceId != null) {
-                onSuccess(invoiceId)
+                withContext(Dispatchers.Main) { onSuccess(invoiceId) }
             }
         }
     }
 
     fun deleteQuotation(quotation: Quotation) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             quotationRepository.deleteQuotation(quotation)
         }
     }
@@ -219,18 +221,18 @@ class QuotationViewModel(
             return
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             if (trimmedPhone.isNotBlank()) {
                 val existing = customerRepository.getCustomerByPhoneOneShot(trimmedPhone)
                 if (existing != null) {
-                    onError("A customer with this mobile number already exists")
+                    withContext(Dispatchers.Main) { onError("A customer with this mobile number already exists") }
                     return@launch
                 }
             }
 
             val newCustomer = Customer(name = trimmedName, phone = trimmedPhone, address = trimmedAddress)
             val newId = customerRepository.insertCustomer(newCustomer)
-            onSuccess(newCustomer.copy(id = newId))
+            withContext(Dispatchers.Main) { onSuccess(newCustomer.copy(id = newId)) }
         }
     }
 }

@@ -10,6 +10,7 @@ import com.example.hisabbook.data.repository.CustomerRepository
 import com.example.hisabbook.data.repository.InvoiceRepository
 import com.example.hisabbook.data.repository.PaymentRepository
 import com.example.hisabbook.data.repository.QuotationRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class CustomerWithBalance(
     val customer: Customer,
@@ -155,13 +157,13 @@ class CustomerViewModel(
             }
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             if (trimmedPhone.isNotBlank()) {
                 val existingPhone = customerRepository.getCustomerByPhoneOneShot(trimmedPhone)
                 if (existingPhone != null && existingPhone.id != id) {
                     val err = "A customer with this mobile number already exists"
                     _userMessage.value = err
-                    onError?.invoke(err)
+                    withContext(Dispatchers.Main) { onError?.invoke(err) }
                     return@launch
                 }
             }
@@ -175,18 +177,18 @@ class CustomerViewModel(
                 customerRepository.updateCustomer(existingCustomer)
                 _userMessage.value = "Customer '$trimmedName' updated successfully"
             }
-            onSuccess()
+            withContext(Dispatchers.Main) { onSuccess() }
         }
     }
 
     fun deleteCustomer(customer: Customer, onSuccess: () -> Unit = {}) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             customerRepository.deleteCustomer(customer)
             if (_selectedCustomerId.value == customer.id) {
                 _selectedCustomerId.value = null
             }
             _userMessage.value = "Customer '${customer.name}' deleted"
-            onSuccess()
+            withContext(Dispatchers.Main) { onSuccess() }
         }
     }
 

@@ -10,12 +10,14 @@ import com.example.hisabbook.data.repository.InventoryRepository
 import com.example.hisabbook.data.repository.InvoiceRepository
 import com.example.hisabbook.data.repository.PaymentRepository
 import com.example.hisabbook.util.LocaleHelper
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Calendar
 
 enum class ActivityType {
@@ -44,7 +46,7 @@ class DashboardViewModel(
 ) : ViewModel() {
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             businessProfileRepository.ensureDefaultProfile()
         }
     }
@@ -149,21 +151,25 @@ class DashboardViewModel(
     )
 
     fun toggleLanguage(context: Context) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val current = businessProfile.value ?: BusinessProfile()
             val newLang = if (current.languagePreference.lowercase() == "hi") "en" else "hi"
             val updated = current.copy(languagePreference = newLang)
             businessProfileRepository.updateBusinessProfile(updated)
-            LocaleHelper.applyLocale(context, newLang)
+            withContext(Dispatchers.Main) {
+                LocaleHelper.applyLocale(context, newLang)
+            }
         }
     }
 
     fun setLanguage(context: Context, languageCode: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val current = businessProfile.value ?: BusinessProfile()
             val updated = current.copy(languagePreference = languageCode)
             businessProfileRepository.updateBusinessProfile(updated)
-            LocaleHelper.applyLocale(context, languageCode)
+            withContext(Dispatchers.Main) {
+                LocaleHelper.applyLocale(context, languageCode)
+            }
         }
     }
 }

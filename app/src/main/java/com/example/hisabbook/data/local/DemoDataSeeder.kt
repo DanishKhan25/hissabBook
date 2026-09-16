@@ -8,6 +8,9 @@ import com.example.hisabbook.data.local.entity.Payment
 import com.example.hisabbook.data.local.entity.Quotation
 import com.example.hisabbook.data.local.entity.StockTransaction
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 object DemoDataSeeder {
 
     fun getDemoBusinessProfile(): BusinessProfile {
@@ -147,21 +150,21 @@ object DemoDataSeeder {
         )
     }
 
-    suspend fun seedDemoData(db: AppDatabase, force: Boolean = false) {
+    suspend fun seedDemoData(db: AppDatabase, force: Boolean = false) = withContext(Dispatchers.IO) {
         if (!force) {
             val existingCustomers = db.customerDao().getAllCustomersOneShot()
             if (existingCustomers.isNotEmpty()) {
-                return
+                return@withContext
             }
         }
 
         db.restoreDatabase(
             profile = getDemoBusinessProfile(),
             customers = getDemoCustomers(),
+            inventoryItems = getDemoInventoryItems(),
             quotations = getDemoQuotations(),
             invoices = getDemoInvoices(),
             payments = getDemoPayments(),
-            inventoryItems = getDemoInventoryItems(),
             stockTransactions = getDemoStockTransactions()
         )
     }

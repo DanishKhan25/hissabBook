@@ -15,6 +15,7 @@ import com.example.hisabbook.data.repository.InventoryRepository
 import com.example.hisabbook.data.repository.InvoiceRepository
 import com.example.hisabbook.data.repository.PaymentRepository
 import com.example.hisabbook.data.repository.QuotationRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Calendar
 import java.util.Locale
 
@@ -138,7 +140,7 @@ class InvoiceViewModel(
         lineItems: List<InvoiceLineItem> = emptyList(),
         onSuccess: (Long) -> Unit
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val billNum = generateNextBillNumber()
             val id = invoiceRepository.createInvoice(
                 customerId = customerId,
@@ -162,7 +164,7 @@ class InvoiceViewModel(
                 }
             }
 
-            onSuccess(id)
+            withContext(Dispatchers.Main) { onSuccess(id) }
         }
     }
 
@@ -173,7 +175,7 @@ class InvoiceViewModel(
         paymentMode: String,
         notes: String = ""
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             paymentRepository.recordPayment(
                 billId = billId,
                 customerId = customerId,
@@ -185,13 +187,13 @@ class InvoiceViewModel(
     }
 
     fun updateInvoiceStatus(invoiceId: Long, status: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             invoiceRepository.updateInvoiceStatus(invoiceId, status)
         }
     }
 
     fun deleteInvoice(invoice: Invoice) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             invoiceRepository.deleteInvoice(invoice)
         }
     }
@@ -205,7 +207,7 @@ class InvoiceViewModel(
         lineItems: List<InvoiceLineItem> = emptyList(),
         onSuccess: () -> Unit
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val existing = invoiceRepository.getInvoiceByIdOneShot(invoiceId)
             if (existing != null) {
                 val total = (amount - discount).coerceAtLeast(0.0)
@@ -217,7 +219,7 @@ class InvoiceViewModel(
                     total = total
                 )
                 invoiceRepository.updateInvoice(updated)
-                onSuccess()
+                withContext(Dispatchers.Main) { onSuccess() }
             }
         }
     }
@@ -243,18 +245,18 @@ class InvoiceViewModel(
             return
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             if (trimmedPhone.isNotBlank()) {
                 val existing = customerRepository.getCustomerByPhoneOneShot(trimmedPhone)
                 if (existing != null) {
-                    onError("A customer with this mobile number already exists")
+                    withContext(Dispatchers.Main) { onError("A customer with this mobile number already exists") }
                     return@launch
                 }
             }
 
             val newCustomer = Customer(name = trimmedName, phone = trimmedPhone, address = trimmedAddress)
             val newId = customerRepository.insertCustomer(newCustomer)
-            onSuccess(newCustomer.copy(id = newId))
+            withContext(Dispatchers.Main) { onSuccess(newCustomer.copy(id = newId)) }
         }
     }
 }

@@ -8,6 +8,7 @@ import com.example.hisabbook.data.repository.CustomerRepository
 import com.example.hisabbook.data.repository.InvoiceRepository
 import com.example.hisabbook.data.repository.PaymentRepository
 import com.example.hisabbook.util.CurrencyFormatter
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class PaymentDisplayItem(
     val payment: Payment,
@@ -88,7 +90,7 @@ class PaymentViewModel(
             return
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val effectiveBillId = billId ?: 0L
             if (effectiveBillId > 0) {
                 val invoice = invoiceRepository.getInvoiceByIdOneShot(effectiveBillId)
@@ -100,7 +102,7 @@ class PaymentViewModel(
                     if (amount > outstanding && outstanding > 0) {
                         val err = "Payment amount (${CurrencyFormatter.formatCurrency(amount)}) cannot exceed bill outstanding balance (${CurrencyFormatter.formatCurrency(outstanding)})"
                         _userMessage.value = err
-                        onError?.invoke(err)
+                        withContext(Dispatchers.Main) { onError?.invoke(err) }
                         return@launch
                     }
                 }
@@ -114,12 +116,12 @@ class PaymentViewModel(
                 notes = notes.trim()
             )
             _userMessage.value = "Payment of ₹${CurrencyFormatter.formatAmountOnly(amount)} recorded successfully"
-            onSuccess()
+            withContext(Dispatchers.Main) { onSuccess() }
         }
     }
 
     fun deletePayment(payment: Payment) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             paymentRepository.deletePayment(payment)
             _userMessage.value = "Payment deleted successfully"
         }

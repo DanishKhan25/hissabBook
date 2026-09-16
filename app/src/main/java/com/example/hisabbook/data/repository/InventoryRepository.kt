@@ -4,7 +4,9 @@ import com.example.hisabbook.data.local.dao.InventoryDao
 import com.example.hisabbook.data.local.dao.StockTransactionDao
 import com.example.hisabbook.data.local.entity.InventoryItem
 import com.example.hisabbook.data.local.entity.StockTransaction
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 
 class InventoryRepository(
     private val inventoryDao: InventoryDao,
@@ -17,20 +19,24 @@ class InventoryRepository(
     fun getInventoryItemById(id: Long): Flow<InventoryItem?> =
         inventoryDao.getInventoryItemById(id)
 
-    suspend fun getInventoryItemByNameOneShot(name: String): InventoryItem? =
+    suspend fun getInventoryItemByNameOneShot(name: String): InventoryItem? = withContext(Dispatchers.IO) {
         inventoryDao.getInventoryItemByNameOneShot(name)
+    }
 
     fun searchInventoryItems(query: String): Flow<List<InventoryItem>> =
         inventoryDao.searchInventoryItems(query)
 
-    suspend fun insertInventoryItem(item: InventoryItem): Long =
+    suspend fun insertInventoryItem(item: InventoryItem): Long = withContext(Dispatchers.IO) {
         inventoryDao.insertInventoryItem(item)
+    }
 
-    suspend fun updateInventoryItem(item: InventoryItem) =
+    suspend fun updateInventoryItem(item: InventoryItem) = withContext(Dispatchers.IO) {
         inventoryDao.updateInventoryItem(item)
+    }
 
-    suspend fun deleteInventoryItem(item: InventoryItem) =
+    suspend fun deleteInventoryItem(item: InventoryItem) = withContext(Dispatchers.IO) {
         inventoryDao.deleteInventoryItem(item)
+    }
 
     fun getTransactionsForItem(itemId: Long): Flow<List<StockTransaction>> =
         stockTransactionDao.getTransactionsForItem(itemId)
@@ -46,8 +52,8 @@ class InventoryRepository(
         purchasePrice: Double = 0.0,
         reason: String = "",
         reference: String = ""
-    ): Long? {
-        val currentItem = inventoryDao.getInventoryItemByIdOneShot(inventoryItemId) ?: return null
+    ): Long? = withContext(Dispatchers.IO) {
+        val currentItem = inventoryDao.getInventoryItemByIdOneShot(inventoryItemId) ?: return@withContext null
 
         val newQuantity = when (type.uppercase()) {
             "IN" -> currentItem.quantity + quantity
@@ -67,6 +73,6 @@ class InventoryRepository(
             reference = reference
         )
 
-        return stockTransactionDao.insertStockTransaction(transaction)
+        stockTransactionDao.insertStockTransaction(transaction)
     }
 }

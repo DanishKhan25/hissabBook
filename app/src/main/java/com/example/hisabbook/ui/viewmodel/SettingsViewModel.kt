@@ -10,14 +10,14 @@ import com.example.hisabbook.data.local.DemoDataSeeder
 import com.example.hisabbook.data.local.entity.BusinessProfile
 import com.example.hisabbook.data.repository.BusinessProfileRepository
 import com.example.hisabbook.util.LocaleHelper
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.io.BufferedReader
-import java.io.InputStreamReader
+import kotlinx.coroutines.withContext
 
 class SettingsViewModel(
     private val businessProfileRepository: BusinessProfileRepository,
@@ -28,7 +28,7 @@ class SettingsViewModel(
     val userMessage: StateFlow<String?> = _userMessage.asStateFlow()
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             businessProfileRepository.ensureDefaultProfile()
         }
     }
@@ -55,7 +55,7 @@ class SettingsViewModel(
             return
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val current = businessProfile.value ?: BusinessProfile()
             val updated = current.copy(
                 businessName = businessName.trim(),
@@ -69,29 +69,33 @@ class SettingsViewModel(
             )
             businessProfileRepository.updateBusinessProfile(updated)
             _userMessage.value = "Business profile updated successfully!"
-            onSuccess()
+            withContext(Dispatchers.Main) { onSuccess() }
         }
     }
 
     fun setLanguage(context: Context, languageCode: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val current = businessProfile.value ?: BusinessProfile()
             val updated = current.copy(
                 languagePreference = languageCode,
                 isOnboardingCompleted = true
             )
             businessProfileRepository.updateBusinessProfile(updated)
-            LocaleHelper.applyLocale(context, languageCode)
+            withContext(Dispatchers.Main) {
+                LocaleHelper.applyLocale(context, languageCode)
+            }
             _userMessage.value = if (languageCode == "hi") "भाषा हिन्दी पर सेट की गई" else "Language set to English"
         }
     }
 
     fun exportBackup(context: Context, uri: Uri) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 val jsonString = BackupManager.exportBackupToJson(database)
-                context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                    outputStream.write(jsonString.toByteArray(Charsets.UTF_8))
+                val outputStream = context.contentResolver.openOutputStream(uri)
+                    ?: throw IllegalStateException("Unable to open output stream for selected URI")
+                outputStream.use { stream ->
+                    stream.write(jsonString.toByteArray(Charsets.UTF_8))
                 }
                 _userMessage.value = "Backup exported successfully!"
             } catch (e: Exception) {
@@ -102,43 +106,37 @@ class SettingsViewModel(
     }
 
     fun importBackup(context: Context, uri: Uri) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                val stringBuilder = StringBuilder()
-                context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8)).use { reader ->
-                        var line: String? = reader.readLine()
-                        while (line != null) {
-                            stringBuilder.append(line)
-                            line = reader.readLine()
-                        }
-                    }
+                val inputStream = context.contentResolver.openInputStream(uri)
+                    ?: throw IllegalStateException("Unable to open selected file stream")
+                val jsonString = inputStream.bufferedReader(Charsets.UTF_8).use { reader ->
+                    reader.readText()
                 }
-                val jsonString = stringBuilder.toString()
+
                 if (jsonString.isBlank()) {
                     _userMessage.value = "Selected backup file is empty"
                     return@launch
                 }
 
-                val success = BackupManager.importBackupFromJson(database, jsonString)
-                if (success) {
-                    val updatedProfile = businessProfileRepository.getBusinessProfileOneShot()
+                BackupManager.importBackupFromJson(database, jsonString)
+
+                val updatedProfile = businessProfileRepository.getBusinessProfileOneShot()
+                withContext(Dispatchers.Main) {
                     updatedProfile?.languagePreference?.let { lang ->
                         LocaleHelper.applyLocale(context, lang)
                     }
-                    _userMessage.value = "Database restored successfully!"
-                } else {
-                    _userMessage.value = "Failed to restore backup: Invalid JSON file"
                 }
+                _userMessage.value = "Database restored successfully!"
             } catch (e: Exception) {
                 e.printStackTrace()
-                _userMessage.value = "Error importing backup: ${e.localizedMessage}"
+                _userMessage.value = "Failed to restore backup: ${e.localizedMessage ?: "Invalid file"}"
             }
         }
     }
 
     fun loadDemoData() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 DemoDataSeeder.seedDemoData(database, force = true)
                 _userMessage.value = "Demo data loaded successfully!"

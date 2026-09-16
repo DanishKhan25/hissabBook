@@ -6,6 +6,7 @@ import com.example.hisabbook.data.local.entity.InventoryItem
 import com.example.hisabbook.data.local.entity.StockTransaction
 import com.example.hisabbook.data.repository.InventoryRepository
 import com.example.hisabbook.util.CurrencyFormatter
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class InventoryViewModel(
     private val inventoryRepository: InventoryRepository
@@ -85,12 +87,12 @@ class InventoryViewModel(
             return
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val existing = inventoryRepository.getInventoryItemByNameOneShot(trimmedName)
             if (existing != null) {
                 val err = "An inventory item with this name already exists"
                 _userMessage.value = err
-                onError?.invoke(err)
+                withContext(Dispatchers.Main) { onError?.invoke(err) }
                 return@launch
             }
 
@@ -115,7 +117,7 @@ class InventoryViewModel(
             }
 
             _userMessage.value = "Inventory item '$trimmedName' added successfully"
-            onSuccess()
+            withContext(Dispatchers.Main) { onSuccess() }
         }
     }
 
@@ -131,7 +133,7 @@ class InventoryViewModel(
             return
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val item = inventoryRepository.getInventoryItemById(itemId).firstOrNull()
             inventoryRepository.recordStockTransaction(
                 inventoryItemId = itemId,
@@ -142,7 +144,7 @@ class InventoryViewModel(
             )
             val itemName = item?.name ?: "Item"
             _userMessage.value = "Stock In recorded: +${CurrencyFormatter.formatAmountOnly(quantity)} ${item?.unit ?: ""} for $itemName"
-            onSuccess()
+            withContext(Dispatchers.Main) { onSuccess() }
         }
     }
 
@@ -161,19 +163,19 @@ class InventoryViewModel(
             return
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val item = inventoryRepository.getInventoryItemById(itemId).firstOrNull()
             if (item == null) {
                 val msg = "Selected inventory item not found"
                 _userMessage.value = msg
-                onError(msg)
+                withContext(Dispatchers.Main) { onError(msg) }
                 return@launch
             }
 
             if (item.quantity < quantity) {
                 val errorMsg = "Cannot reduce stock below 0! Available stock is ${CurrencyFormatter.formatAmountOnly(item.quantity)} ${item.unit}, requested: ${CurrencyFormatter.formatAmountOnly(quantity)} ${item.unit}"
                 _userMessage.value = errorMsg
-                onError(errorMsg)
+                withContext(Dispatchers.Main) { onError(errorMsg) }
                 return@launch
             }
 
@@ -187,7 +189,7 @@ class InventoryViewModel(
             )
             val successMsg = "Stock Out recorded: -${CurrencyFormatter.formatAmountOnly(quantity)} ${item.unit} for ${item.name}"
             _userMessage.value = successMsg
-            onSuccess()
+            withContext(Dispatchers.Main) { onSuccess() }
         }
     }
 

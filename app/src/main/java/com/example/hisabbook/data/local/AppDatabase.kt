@@ -22,6 +22,7 @@ import com.example.hisabbook.data.local.entity.StockTransaction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Database(
     entities = [
@@ -49,21 +50,21 @@ abstract class AppDatabase : RoomDatabase() {
     open suspend fun restoreDatabase(
         profile: BusinessProfile?,
         customers: List<Customer>,
+        inventoryItems: List<InventoryItem>,
         quotations: List<Quotation>,
         invoices: List<Invoice>,
         payments: List<Payment>,
-        inventoryItems: List<InventoryItem>,
         stockTransactions: List<StockTransaction>
-    ) {
+    ) = withContext(Dispatchers.IO) {
         clearAllTables()
         if (profile != null) {
             businessProfileDao().insertOrUpdateBusinessProfile(profile)
         }
         customers.forEach { customerDao().insertCustomer(it) }
+        inventoryItems.forEach { inventoryDao().insertInventoryItem(it) }
         quotations.forEach { quotationDao().insertQuotation(it) }
         invoices.forEach { invoiceDao().insertInvoice(it) }
         payments.forEach { paymentDao().insertPayment(it) }
-        inventoryItems.forEach { inventoryDao().insertInventoryItem(it) }
         stockTransactions.forEach { stockTransactionDao().insertStockTransaction(it) }
     }
 

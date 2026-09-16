@@ -47,9 +47,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.hisabbook.data.local.entity.InventoryItem
+import com.example.hisabbook.ui.theme.HisabBookTheme
 import com.example.hisabbook.ui.viewmodel.InventoryViewModel
 import com.example.hisabbook.util.CurrencyFormatter
 
@@ -137,40 +139,12 @@ fun InventoryListScreen(
             }
 
             // Search Bar & Low Stock Filter Chip
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { viewModel.setSearchQuery(it) },
-                    placeholder = { Text("Search inventory item...") },
-                    leadingIcon = {
-                        Icon(imageVector = Icons.Rounded.Search, contentDescription = "Search")
-                    },
-                    trailingIcon = {
-                        if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { viewModel.setSearchQuery("") }) {
-                                Icon(imageVector = Icons.Rounded.Clear, contentDescription = "Clear")
-                            }
-                        }
-                    },
-                    shape = RoundedCornerShape(28.dp),
-                    singleLine = true,
-                    modifier = Modifier.weight(1f)
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                FilterChip(
-                    selected = showOnlyLowStock,
-                    onClick = { viewModel.toggleLowStockFilter() },
-                    label = { Text("Low Stock") },
-                    leadingIcon = if (showOnlyLowStock) {
-                        { Icon(Icons.Rounded.Warning, contentDescription = null, modifier = Modifier.size(16.dp)) }
-                    } else null
-                )
-            }
+            InventorySearchBar(
+                searchQuery = searchQuery,
+                onSearchQueryChange = { viewModel.setSearchQuery(it) },
+                showOnlyLowStock = showOnlyLowStock,
+                onToggleLowStockFilter = { viewModel.toggleLowStockFilter() }
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -382,3 +356,89 @@ fun InventoryItemCard(
         }
     }
 }
+
+@Composable
+fun InventorySearchBar(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    showOnlyLowStock: Boolean,
+    onToggleLowStockFilter: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = onSearchQueryChange,
+            placeholder = { Text("Search inventory item...") },
+            leadingIcon = {
+                Icon(imageVector = Icons.Rounded.Search, contentDescription = "Search")
+            },
+            trailingIcon = {
+                if (searchQuery.isNotEmpty()) {
+                    IconButton(onClick = { onSearchQueryChange("") }) {
+                        Icon(imageVector = Icons.Rounded.Clear, contentDescription = "Clear search")
+                    }
+                }
+            },
+            shape = RoundedCornerShape(28.dp),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            FilterChip(
+                selected = !showOnlyLowStock,
+                onClick = { if (showOnlyLowStock) onToggleLowStockFilter() },
+                label = { Text("All Items") }
+            )
+            FilterChip(
+                selected = showOnlyLowStock,
+                onClick = { if (!showOnlyLowStock) onToggleLowStockFilter() },
+                label = { Text("Low Stock") },
+                leadingIcon = if (showOnlyLowStock) {
+                    { Icon(Icons.Rounded.Warning, contentDescription = null, modifier = Modifier.size(16.dp)) }
+                } else null
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun InventorySearchBarPreview() {
+    HisabBookTheme {
+        InventorySearchBar(
+            searchQuery = "",
+            onSearchQueryChange = {},
+            showOnlyLowStock = false,
+            onToggleLowStockFilter = {},
+            modifier = Modifier.padding(16.dp)
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun InventoryItemCardPreview() {
+    HisabBookTheme {
+        InventoryItemCard(
+            item = InventoryItem(
+                id = 1L,
+                name = "Cement Bag 50kg",
+                unit = "bag",
+                quantity = 5.0,
+                minimumStock = 10.0,
+                purchasePrice = 380.0
+            ),
+            onStockInClick = {},
+            onStockOutClick = {},
+            modifier = Modifier.padding(16.dp)
+        )
+    }
+}
+

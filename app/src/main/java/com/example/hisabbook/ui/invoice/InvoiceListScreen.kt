@@ -43,9 +43,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.hisabbook.data.local.entity.Invoice
+import com.example.hisabbook.ui.theme.HisabBookTheme
 import com.example.hisabbook.ui.viewmodel.InvoiceViewModel
 import com.example.hisabbook.util.CurrencyFormatter
 import com.example.hisabbook.util.DateUtils
@@ -65,13 +68,6 @@ fun InvoiceListScreen(
 
     val customerMap = customers.associateBy { it.id }
     val paymentsByInvoice = payments.groupBy { it.billId }
-
-    val filterOptions = listOf(
-        "ALL" to "All",
-        "UNPAID" to "Unpaid",
-        "PARTIALLY_PAID" to "Partially Paid",
-        "PAID" to "Paid"
-    )
 
     Scaffold(
         topBar = {
@@ -101,45 +97,14 @@ fun InvoiceListScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Search Bar
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { invoiceViewModel.setSearchQuery(it) },
-                placeholder = { Text("Search bill #, customer name or items...") },
-                leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { invoiceViewModel.setSearchQuery("") }) {
-                            Icon(Icons.Rounded.Clear, contentDescription = "Clear search")
-                        }
-                    }
-                },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            // Search Bar & Filter Chips
+            InvoiceSearchBar(
+                searchQuery = searchQuery,
+                onSearchQueryChange = { invoiceViewModel.setSearchQuery(it) },
+                statusFilter = statusFilter,
+                onStatusFilterChange = { invoiceViewModel.setStatusFilter(it) },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
-
-            // Filter Chips
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(filterOptions) { (key, label) ->
-                    val isSelected = (statusFilter == null && key == "ALL") || statusFilter.equals(key, ignoreCase = true)
-                    FilterChip(
-                        selected = isSelected,
-                        onClick = {
-                            if (key == "ALL") {
-                                invoiceViewModel.setStatusFilter(null)
-                            } else {
-                                invoiceViewModel.setStatusFilter(key)
-                            }
-                        },
-                        label = { Text(label) }
-                    )
-                }
-            }
 
             if (invoices.isEmpty()) {
                 Box(
@@ -323,3 +288,105 @@ fun InvoiceStatusBadge(status: String, balance: Double) {
         )
     }
 }
+
+@Composable
+fun InvoiceSearchBar(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    statusFilter: String?,
+    onStatusFilterChange: (String?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val filterOptions = listOf(
+        "ALL" to "All",
+        "UNPAID" to "Unpaid",
+        "PARTIALLY_PAID" to "Partially Paid",
+        "PAID" to "Paid"
+    )
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = onSearchQueryChange,
+            placeholder = {
+                Text(
+                    text = "Search bill #, customer name or items...",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            },
+            leadingIcon = {
+                Icon(imageVector = Icons.Rounded.Search, contentDescription = "Search")
+            },
+            trailingIcon = {
+                if (searchQuery.isNotEmpty()) {
+                    IconButton(onClick = { onSearchQueryChange("") }) {
+                        Icon(imageVector = Icons.Rounded.Clear, contentDescription = "Clear search")
+                    }
+                }
+            },
+            shape = RoundedCornerShape(28.dp),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(filterOptions) { (key, label) ->
+                val isSelected = (statusFilter == null && key == "ALL") || statusFilter.equals(key, ignoreCase = true)
+                FilterChip(
+                    selected = isSelected,
+                    onClick = {
+                        if (key == "ALL") {
+                            onStatusFilterChange(null)
+                        } else {
+                            onStatusFilterChange(key)
+                        }
+                    },
+                    label = { Text(label) }
+                )
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun InvoiceSearchBarPreview() {
+    HisabBookTheme {
+        InvoiceSearchBar(
+            searchQuery = "",
+            onSearchQueryChange = {},
+            statusFilter = null,
+            onStatusFilterChange = {},
+            modifier = Modifier.padding(16.dp)
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun InvoiceCardPreview() {
+    HisabBookTheme {
+        InvoiceCard(
+            invoice = Invoice(
+                id = 1L,
+                billNumber = "1001",
+                customerId = 1L,
+                description = "Hardware materials and paint supplies",
+                amount = 12500.0,
+                total = 12500.0,
+                status = "PARTIALLY_PAID"
+            ),
+            customerName = "Suresh Sharma",
+            paidAmount = 5000.0,
+            outstandingBalance = 7500.0,
+            onClick = {}
+        )
+    }
+}
+
+

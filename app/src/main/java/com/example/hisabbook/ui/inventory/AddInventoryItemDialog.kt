@@ -1,11 +1,12 @@
 package com.example.hisabbook.ui.inventory
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AttachMoney
@@ -28,10 +29,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.hisabbook.ui.theme.HisabBookTheme
 import com.example.hisabbook.util.parseCleanDoubleOrDefault
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AddInventoryItemDialog(
     onDismissRequest: () -> Unit,
@@ -75,9 +77,12 @@ fun AddInventoryItemDialog(
 
                 // Unit Selector
                 Text("Select Unit", style = MaterialTheme.typography.labelMedium)
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                // Replaced FlowRow with a horizontally scrollable Row to prevent infinite layout measurement loops in Compose Preview inside AlertDialog
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     commonUnits.forEach { u ->
                         FilterChip(
@@ -158,3 +163,15 @@ fun AddInventoryItemDialog(
         }
     )
 }
+
+@Preview(showBackground = true)
+@Composable
+fun AddInventoryItemDialogPreview() {
+    HisabBookTheme {
+        AddInventoryItemDialog(
+            onDismissRequest = {},
+            onSaveItem = { _, _, _, _, _, _ -> }
+        )
+    }
+}
+

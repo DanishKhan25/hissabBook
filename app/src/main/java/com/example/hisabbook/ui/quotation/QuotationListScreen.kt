@@ -42,9 +42,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.hisabbook.data.local.entity.Quotation
+import com.example.hisabbook.ui.theme.HisabBookTheme
 import com.example.hisabbook.ui.viewmodel.QuotationViewModel
 import com.example.hisabbook.util.CurrencyFormatter
 import com.example.hisabbook.util.DateUtils
@@ -62,15 +65,6 @@ fun QuotationListScreen(
     val statusFilter by viewModel.statusFilter.collectAsStateWithLifecycle()
 
     val customerMap = customers.associateBy { it.id }
-
-    val filterOptions = listOf(
-        "ALL" to "All",
-        "DRAFT" to "Draft",
-        "SENT" to "Sent",
-        "APPROVED" to "Approved",
-        "REJECTED" to "Rejected",
-        "CONVERTED" to "Converted"
-    )
 
     Scaffold(
         topBar = {
@@ -100,45 +94,14 @@ fun QuotationListScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Search Bar
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { viewModel.setSearchQuery(it) },
-                placeholder = { Text("Search by quotation #, customer or work...") },
-                leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.setSearchQuery("") }) {
-                            Icon(Icons.Rounded.Clear, contentDescription = "Clear search")
-                        }
-                    }
-                },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            // Search Bar & Filter Chips
+            QuotationSearchBar(
+                searchQuery = searchQuery,
+                onSearchQueryChange = { viewModel.setSearchQuery(it) },
+                statusFilter = statusFilter,
+                onStatusFilterChange = { viewModel.setStatusFilter(it) },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
-
-            // Status Filter Chips
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(filterOptions) { (key, label) ->
-                    val isSelected = (statusFilter == null && key == "ALL") || statusFilter.equals(key, ignoreCase = true)
-                    FilterChip(
-                        selected = isSelected,
-                        onClick = {
-                            if (key == "ALL") {
-                                viewModel.setStatusFilter(null)
-                            } else {
-                                viewModel.setStatusFilter(key)
-                            }
-                        },
-                        label = { Text(label) }
-                    )
-                }
-            }
 
             if (quotations.isEmpty()) {
                 Box(
@@ -323,3 +286,107 @@ fun QuotationStatusChip(status: String) {
         )
     }
 }
+
+@Composable
+fun QuotationSearchBar(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    statusFilter: String?,
+    onStatusFilterChange: (String?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val filterOptions = listOf(
+        "ALL" to "All",
+        "DRAFT" to "Draft",
+        "SENT" to "Sent",
+        "APPROVED" to "Approved",
+        "REJECTED" to "Rejected",
+        "CONVERTED" to "Converted"
+    )
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = onSearchQueryChange,
+            placeholder = {
+                Text(
+                    text = "Search by quotation #, customer or work...",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            },
+            leadingIcon = {
+                Icon(imageVector = Icons.Rounded.Search, contentDescription = "Search")
+            },
+            trailingIcon = {
+                if (searchQuery.isNotEmpty()) {
+                    IconButton(onClick = { onSearchQueryChange("") }) {
+                        Icon(imageVector = Icons.Rounded.Clear, contentDescription = "Clear search")
+                    }
+                }
+            },
+            shape = RoundedCornerShape(28.dp),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(filterOptions) { (key, label) ->
+                val isSelected = (statusFilter == null && key == "ALL") || statusFilter.equals(key, ignoreCase = true)
+                FilterChip(
+                    selected = isSelected,
+                    onClick = {
+                        if (key == "ALL") {
+                            onStatusFilterChange(null)
+                        } else {
+                            onStatusFilterChange(key)
+                        }
+                    },
+                    label = { Text(label) }
+                )
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun QuotationSearchBarPreview() {
+    HisabBookTheme {
+        QuotationSearchBar(
+            searchQuery = "",
+            onSearchQueryChange = {},
+            statusFilter = null,
+            onStatusFilterChange = {},
+            modifier = Modifier.padding(16.dp)
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun QuotationCardPreview() {
+    HisabBookTheme {
+        QuotationCard(
+            quotation = Quotation(
+                id = 1L,
+                quotationNumber = "QUO-2025-001",
+                customerId = 1L,
+                description = "Supply and installation of tiles and sanitary fittings",
+                quantity = 100.0,
+                amount = 450.0,
+                total = 45000.0,
+                status = "APPROVED",
+                notes = "Valid for 10 days"
+            ),
+            customerName = "Ramesh Kumar",
+            onClick = {}
+        )
+    }
+}
+
+

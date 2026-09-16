@@ -148,6 +148,46 @@ class InventoryViewModel(
         }
     }
 
+    fun updateInventoryItemDetails(
+        item: InventoryItem,
+        name: String,
+        unit: String,
+        minimumStock: Double,
+        purchasePrice: Double,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val trimmedName = name.trim()
+        if (trimmedName.isBlank()) {
+            val err = "Item name cannot be empty"
+            _userMessage.value = err
+            onError(err)
+            return
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val existing = inventoryRepository.getInventoryItemByNameOneShot(trimmedName)
+            if (existing != null && existing.id != item.id) {
+                val err = "An inventory item with this name already exists"
+                _userMessage.value = err
+                withContext(Dispatchers.Main) { onError(err) }
+                return@launch
+            }
+
+            inventoryRepository.updateInventoryItem(
+                item.copy(
+                    name = trimmedName,
+                    unit = unit.ifBlank { item.unit },
+                    minimumStock = minimumStock.coerceAtLeast(0.0),
+                    purchasePrice = purchasePrice.coerceAtLeast(0.0)
+                )
+            )
+
+            _userMessage.value = "Inventory item '$trimmedName' updated"
+            withContext(Dispatchers.Main) { onSuccess() }
+        }
+    }
+
     fun stockOut(
         itemId: Long,
         quantity: Double,

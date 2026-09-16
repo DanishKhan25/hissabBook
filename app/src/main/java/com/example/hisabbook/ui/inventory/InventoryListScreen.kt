@@ -22,6 +22,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AddCircle
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Inventory
 import androidx.compose.material.icons.rounded.RemoveCircle
@@ -57,6 +58,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.room.util.getColumnIndexOrThrow
 import com.example.hisabbook.data.local.entity.InventoryItem
 import com.example.hisabbook.data.local.entity.StockTransaction
 import com.example.hisabbook.ui.theme.HisabBookTheme
@@ -76,6 +78,7 @@ fun InventoryListScreen(
     val userMessage by viewModel.userMessage.collectAsStateWithLifecycle()
 
     var showAddItemDialog by remember { mutableStateOf(false) }
+    var showEditItemDialog by remember { mutableStateOf(false) }
     var showStockInDialog by remember { mutableStateOf(false) }
     var showStockOutDialog by remember { mutableStateOf(false) }
     var showStockHistoryDialog by remember { mutableStateOf(false) }
@@ -222,6 +225,10 @@ fun InventoryListScreen(
                                 selectedItemForAction = item
                                 showStockHistoryDialog = true
                             },
+                            onEditClick = {
+                                selectedItemForAction = item
+                                showEditItemDialog = true
+                            },
                             onDeleteClick = { itemPendingDelete = item }
                         )
                     }
@@ -245,6 +252,32 @@ fun InventoryListScreen(
                 )
             }
         )
+    }
+
+    if (showEditItemDialog) {
+        selectedItemForAction?.let { item ->
+            EditInventoryItemDialog(
+                item = item,
+                onDismissRequest = {
+                    showEditItemDialog = false
+                    selectedItemForAction = null
+                },
+                onSaveItem = { name, unit, minimumStock, purchasePrice, onError ->
+                    viewModel.updateInventoryItemDetails(
+                        item = item,
+                        name = name,
+                        unit = unit,
+                        minimumStock = minimumStock,
+                        purchasePrice = purchasePrice,
+                        onSuccess = {
+                            showEditItemDialog = false
+                            selectedItemForAction = null
+                        },
+                        onError = onError
+                    )
+                }
+            )
+        }
     }
 
     if (showStockInDialog) {
@@ -315,6 +348,7 @@ fun InventoryItemCard(
     onStockInClick: () -> Unit,
     onStockOutClick: () -> Unit,
     onHistoryClick: () -> Unit,
+    onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -357,17 +391,12 @@ fun InventoryItemCard(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Status Badge
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = if (isLowStock) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.secondaryContainer
-                    ) {
-                        Text(
-                            text = if (isLowStock) "LOW STOCK" else "IN STOCK",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isLowStock) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSecondaryContainer,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+
+
+                    IconButton(onClick = onEditClick) {
+                        Icon(
+                            imageVector = Icons.Rounded.Edit,
+                            contentDescription = "Edit Item"
                         )
                     }
 
@@ -382,18 +411,39 @@ fun InventoryItemCard(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Column {
+                    Text(
+                        text = "Current Quantity",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "${CurrencyFormatter.formatAmountOnly(item.quantity)} ${item.unit}",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isLowStock) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                    )
+                }
+                // Status Badge
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = if (isLowStock) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.secondaryContainer
+                ) {
+                    Text(
+                        text = if (isLowStock) "LOW STOCK" else "IN STOCK",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isLowStock) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
 
-            Text(
-                text = "Current Quantity",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = "${CurrencyFormatter.formatAmountOnly(item.quantity)} ${item.unit}",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = if (isLowStock) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-            )
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -663,6 +713,7 @@ fun InventoryItemCardPreview() {
             onStockInClick = {},
             onStockOutClick = {},
             onHistoryClick = {},
+            onEditClick = {},
             onDeleteClick = {},
             modifier = Modifier.padding(16.dp)
         )

@@ -31,7 +31,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.hisabbook.data.local.entity.InventoryItem
 import com.example.hisabbook.ui.theme.HisabBookTheme
+import com.example.hisabbook.util.CurrencyFormatter
 import com.example.hisabbook.util.parseCleanDoubleOrDefault
 
 @Composable
@@ -164,6 +166,120 @@ fun AddInventoryItemDialog(
     )
 }
 
+@Composable
+fun EditInventoryItemDialog(
+    item: InventoryItem,
+    onDismissRequest: () -> Unit,
+    onSaveItem: (name: String, unit: String, minimumStock: Double, purchasePrice: Double, onError: (String) -> Unit) -> Unit
+) {
+    var name by remember(item.id) { mutableStateOf(item.name) }
+    var unit by remember(item.id) { mutableStateOf(item.unit) }
+    var minStockText by remember(item.id) {
+        mutableStateOf(CurrencyFormatter.formatAmountOnly(item.minimumStock))
+    }
+    var purchasePriceText by remember(item.id) {
+        mutableStateOf(CurrencyFormatter.formatAmountOnly(item.purchasePrice))
+    }
+
+    var nameError by remember { mutableStateOf<String?>(null) }
+
+    val commonUnits = listOf("pcs", "kg", "meter", "feet", "sq.ft", "sq.m", "box", "ltr")
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text("Edit Inventory Item", style = MaterialTheme.typography.headlineSmall) },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = {
+                        name = it
+                        if (it.isNotBlank()) nameError = null
+                    },
+                    label = { Text("Item Name *") },
+                    leadingIcon = { Icon(Icons.Rounded.Inventory, contentDescription = null) },
+                    isError = nameError != null,
+                    supportingText = nameError?.let { { Text(it) } },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Text("Select Unit", style = MaterialTheme.typography.labelMedium)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    commonUnits.forEach { u ->
+                        FilterChip(
+                            selected = unit.equals(u, ignoreCase = true),
+                            onClick = { unit = u },
+                            label = { Text(u) }
+                        )
+                    }
+                }
+
+                OutlinedTextField(
+                    value = minStockText,
+                    onValueChange = { minStockText = it },
+                    label = { Text("Low Stock Threshold (Min Stock)") },
+                    leadingIcon = { Icon(Icons.Rounded.Warning, contentDescription = null) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal,
+                        imeAction = ImeAction.Next
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = purchasePriceText,
+                    onValueChange = { purchasePriceText = it },
+                    label = { Text("Purchase Price per Unit (₹)") },
+                    leadingIcon = { Icon(Icons.Rounded.AttachMoney, contentDescription = null) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal,
+                        imeAction = ImeAction.Done
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    nameError = null
+                    val trimmedName = name.trim()
+                    if (trimmedName.isBlank()) {
+                        nameError = "Item name is required"
+                    } else {
+                        val minStock = minStockText.parseCleanDoubleOrDefault(0.0)
+                        val price = purchasePriceText.parseCleanDoubleOrDefault(0.0)
+                        onSaveItem(trimmedName, unit, minStock, price) { err ->
+                            nameError = err
+                        }
+                    }
+                }
+            ) {
+                Text("Save Changes")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 fun AddInventoryItemDialogPreview() {
@@ -174,4 +290,3 @@ fun AddInventoryItemDialogPreview() {
         )
     }
 }
-

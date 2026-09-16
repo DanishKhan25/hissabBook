@@ -114,6 +114,9 @@ class QuotationViewModel(
 
     fun getCustomerById(customerId: Long) = customerRepository.getCustomerById(customerId)
 
+    fun getLineItemsForQuotation(quotationId: Long): kotlinx.coroutines.flow.Flow<List<com.example.hisabbook.data.local.entity.InvoiceLineItem>> =
+        quotationRepository.getLineItemsForQuotation(quotationId)
+
     fun createQuotation(
         customerId: Long,
         description: String,
@@ -122,6 +125,7 @@ class QuotationViewModel(
         discount: Double,
         notes: String,
         status: String = "Draft",
+        lineItems: List<com.example.hisabbook.data.local.entity.InvoiceLineItem> = emptyList(),
         onSuccess: (Long) -> Unit
     ) {
         val validQuantity = quantity.coerceAtLeast(0.0)
@@ -145,7 +149,8 @@ class QuotationViewModel(
                 amount = validAmount,
                 discount = validDiscount,
                 notes = notes,
-                status = savedStatus
+                status = savedStatus,
+                lineItems = lineItems
             )
             withContext(Dispatchers.Main) { onSuccess(id) }
         }
@@ -160,6 +165,7 @@ class QuotationViewModel(
         discount: Double,
         notes: String,
         status: String = "Draft",
+        lineItems: List<com.example.hisabbook.data.local.entity.InvoiceLineItem> = emptyList(),
         onSuccess: () -> Unit
     ) {
         val validQuantity = quantity.coerceAtLeast(0.0)
@@ -178,7 +184,7 @@ class QuotationViewModel(
                     notes = notes,
                     status = status
                 )
-                quotationRepository.updateQuotation(updated)
+                quotationRepository.updateQuotation(updated, lineItems)
                 withContext(Dispatchers.Main) { onSuccess() }
             }
         }

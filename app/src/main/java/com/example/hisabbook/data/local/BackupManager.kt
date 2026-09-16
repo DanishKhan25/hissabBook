@@ -4,6 +4,7 @@ import com.example.hisabbook.data.local.entity.BusinessProfile
 import com.example.hisabbook.data.local.entity.Customer
 import com.example.hisabbook.data.local.entity.InventoryItem
 import com.example.hisabbook.data.local.entity.Invoice
+import com.example.hisabbook.data.local.entity.InvoiceLineItemEntity
 import com.example.hisabbook.data.local.entity.Payment
 import com.example.hisabbook.data.local.entity.Quotation
 import com.example.hisabbook.data.local.entity.StockTransaction
@@ -23,7 +24,8 @@ data class BackupData(
     val quotations: List<Quotation> = emptyList(),
     val invoices: List<Invoice> = emptyList(),
     val payments: List<Payment> = emptyList(),
-    val stockTransactions: List<StockTransaction> = emptyList()
+    val stockTransactions: List<StockTransaction> = emptyList(),
+    val invoiceLineItems: List<InvoiceLineItemEntity> = emptyList()
 )
 
 object BackupManager {
@@ -114,6 +116,26 @@ object BackupManager {
             })
         }
         root.put("invoices", invArray)
+
+        // Invoice Line Items (covers both invoice and quotation line items)
+        val lineItemsArray = JSONArray()
+        backupData.invoiceLineItems.forEach { item ->
+            lineItemsArray.put(JSONObject().apply {
+                put("id", item.id)
+                if (item.invoiceId != null) put("invoiceId", item.invoiceId) else put("invoiceId", JSONObject.NULL)
+                if (item.quotationId != null) put("quotationId", item.quotationId) else put("quotationId", JSONObject.NULL)
+                if (item.inventoryItemId != null) {
+                    put("inventoryItemId", item.inventoryItemId)
+                } else {
+                    put("inventoryItemId", JSONObject.NULL)
+                }
+                put("description", item.description)
+                put("unit", item.unit)
+                put("unitRate", item.unitRate)
+                put("quantity", item.quantity)
+            })
+        }
+        root.put("invoiceLineItems", lineItemsArray)
 
         // Payments
         val payArray = JSONArray()
@@ -261,6 +283,36 @@ object BackupManager {
             }
         }
 
+        // Invoice Line Items (covers both invoice and quotation line items; absent in older backups)
+        val invoiceLineItems = mutableListOf<InvoiceLineItemEntity>()
+        if (root.has("invoiceLineItems") && !root.isNull("invoiceLineItems")) {
+            val arr = root.getJSONArray("invoiceLineItems")
+            for (i in 0 until arr.length()) {
+                val obj = arr.getJSONObject(i)
+                val invItemId = if (obj.has("inventoryItemId") && !obj.isNull("inventoryItemId")) {
+                    obj.optLong("inventoryItemId")
+                } else null
+                val invId = if (obj.has("invoiceId") && !obj.isNull("invoiceId")) {
+                    obj.optLong("invoiceId")
+                } else null
+                val qtnId = if (obj.has("quotationId") && !obj.isNull("quotationId")) {
+                    obj.optLong("quotationId")
+                } else null
+                invoiceLineItems.add(
+                    InvoiceLineItemEntity(
+                        id = obj.optLong("id", 0),
+                        invoiceId = invId,
+                        quotationId = qtnId,
+                        inventoryItemId = invItemId,
+                        description = obj.optString("description", ""),
+                        unit = obj.optString("unit", "Pcs"),
+                        unitRate = obj.optDouble("unitRate", 0.0),
+                        quantity = obj.optDouble("quantity", 1.0)
+                    )
+                )
+            }
+        }
+
         val payments = mutableListOf<Payment>()
         if (root.has("payments") && !root.isNull("payments")) {
             val arr = root.getJSONArray("payments")
@@ -309,7 +361,8 @@ object BackupManager {
             quotations = quotations,
             invoices = invoices,
             payments = payments,
-            stockTransactions = stockTransactions
+            stockTransactions = stockTransactions,
+            invoiceLineItems = invoiceLineItems
         )
     }
 
@@ -321,6 +374,7 @@ object BackupManager {
         val invoices = db.invoiceDao().getAllInvoicesOneShot()
         val payments = db.paymentDao().getAllPaymentsOneShot()
         val stockTransactions = db.stockTransactionDao().getAllStockTransactionsOneShot()
+        val invoiceLineItems = db.invoiceLineItemDao().getAllLineItemsOneShot()
 
         val backupData = BackupData(
             businessProfile = profile,
@@ -329,7 +383,8 @@ object BackupManager {
             quotations = quotations,
             invoices = invoices,
             payments = payments,
-            stockTransactions = stockTransactions
+            stockTransactions = stockTransactions,
+            invoiceLineItems = invoiceLineItems
         )
         serializeBackupToJson(backupData)
     }
@@ -343,7 +398,8 @@ object BackupManager {
             quotations = backupData.quotations,
             invoices = backupData.invoices,
             payments = backupData.payments,
-            stockTransactions = backupData.stockTransactions
+            stockTransactions = backupData.stockTransactions,
+            invoiceLineItems = backupData.invoiceLineItems
         )
         true
     }

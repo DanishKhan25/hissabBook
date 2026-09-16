@@ -1,8 +1,12 @@
 package com.example.hisabbook.data.repository
 
 import com.example.hisabbook.data.local.dao.InvoiceDao
+import com.example.hisabbook.data.local.dao.InvoiceLineItemDao
 import com.example.hisabbook.data.local.dao.PaymentDao
 import com.example.hisabbook.data.local.entity.Invoice
+import com.example.hisabbook.data.local.entity.InvoiceLineItem
+import com.example.hisabbook.data.local.entity.toDomain
+import com.example.hisabbook.data.local.entity.toEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -11,7 +15,8 @@ import kotlinx.coroutines.withContext
 
 class InvoiceRepository(
     private val invoiceDao: InvoiceDao,
-    private val paymentDao: PaymentDao
+    private val paymentDao: PaymentDao,
+    private val lineItemDao: InvoiceLineItemDao
 ) {
     val allInvoices: Flow<List<Invoice>> = invoiceDao.getAllInvoices()
 
@@ -24,13 +29,23 @@ class InvoiceRepository(
     fun getInvoicesForCustomer(customerId: Long): Flow<List<Invoice>> =
         invoiceDao.getInvoicesForCustomer(customerId)
 
+    /**
+     * Returns a Flow of domain-model line items for a given invoice.
+     * Emits an empty list if no items have been persisted (e.g. pre-migration invoices).
+     */
+    fun getLineItemsForInvoice(invoiceId: Long): Flow<List<InvoiceLineItem>> =
+        lineItemDao.getLineItemsForInvoice(invoiceId).map { entities ->
+            entities.map { it.toDomain() }
+        }
+
     suspend fun createInvoice(
         customerId: Long,
         billNumber: String,
         description: String,
         amount: Double,
         discount: Double,
-        quotationId: Long? = null
+        quotationId: Long? = null,
+        lineItems: List<InvoiceLineItem> = emptyList()
     ): Long = withContext(Dispatchers.IO) {
         val total = (amount - discount).coerceAtLeast(0.0)
         val invoice = Invoice(
@@ -43,17 +58,31 @@ class InvoiceRepository(
             total = total,
             status = "UNPAID"
         )
-        invoiceDao.insertInvoice(invoice)
+        val id = invoiceDao.insertInvoice(invoice)
+        if (lineItems.isNotEmpty()) {
+            lineItemDao.insertAll(lineItems.map { it.toEntity(id) })
+        }
+        id
     }
 
-    suspend fun updateInvoice(invoice: Invoice) = withContext(Dispatchers.IO) {
+    suspend fun updateInvoice(
+        invoice: Invoice,
+        lineItems: List<InvoiceLineItem> = emptyList()
+    ) = withContext(Dispatchers.IO) {
         val total = (invoice.amount - invoice.discount).coerceAtLeast(0.0)
         val updatedInvoice = invoice.copy(total = total)
         invoiceDao.updateInvoice(updatedInvoice)
+        // Replace all line items: delete old, insert new
+        lineItemDao.deleteByInvoiceId(invoice.id)
+        if (lineItems.isNotEmpty()) {
+            lineItemDao.insertAll(lineItems.map { it.toEntity(invoice.id) })
+        }
         recalculateInvoiceStatus(invoice.id)
     }
 
     suspend fun deleteInvoice(invoice: Invoice) = withContext(Dispatchers.IO) {
+        // Remove associated line items before deleting the invoice
+        lineItemDao.deleteByInvoiceId(invoice.id)
         invoiceDao.deleteInvoice(invoice)
     }
 

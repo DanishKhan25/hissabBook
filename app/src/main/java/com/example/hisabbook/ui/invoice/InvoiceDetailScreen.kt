@@ -54,6 +54,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.hisabbook.R
 import com.example.hisabbook.data.local.entity.Payment
+import com.example.hisabbook.ui.components.BillItemsCard
+import com.example.hisabbook.ui.components.BillLineItem
 import com.example.hisabbook.ui.payment.AddPaymentDialog
 import com.example.hisabbook.ui.viewmodel.CustomerViewModel
 import com.example.hisabbook.ui.viewmodel.InvoiceViewModel
@@ -80,6 +82,36 @@ fun InvoiceDetailScreen(
     val customers by invoiceViewModel.customers.collectAsStateWithLifecycle()
     val payments by invoiceViewModel.getPaymentsForInvoice(invoiceId).collectAsStateWithLifecycle(initialValue = emptyList())
     val businessProfile by (settingsViewModel?.businessProfile ?: invoiceViewModel.businessProfile).collectAsStateWithLifecycle()
+
+    // Collect persisted line items for this invoice
+    val lineItems by invoiceViewModel.getLineItemsForInvoice(invoiceId)
+        .collectAsStateWithLifecycle(initialValue = emptyList())
+
+    // Convert domain line items → BillLineItem for the shared card
+    // and → PdfGenerator.TableItem for PDF generation
+    val billLineItems: List<BillLineItem> = remember(lineItems) {
+        lineItems.map { item ->
+            BillLineItem(
+                name = item.description,
+                quantity = item.quantity,
+                unit = item.unit,
+                rate = item.unitRate,
+                amount = item.unitRate * item.quantity
+            )
+        }
+    }
+
+    val tableItems: List<PdfGenerator.TableItem> = remember(lineItems) {
+        lineItems.map { item ->
+            PdfGenerator.TableItem(
+                description = item.description,
+                quantity = item.quantity,
+                unit = item.unit,
+                rate = item.unitRate,
+                amount = item.unitRate * item.quantity
+            )
+        }
+    }
 
     var showAddPaymentDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -116,13 +148,16 @@ fun InvoiceDetailScreen(
     val totalPaid = payments.sumOf { it.amount }
     val balanceDue = (currentInvoice.total - totalPaid).coerceAtLeast(0.0)
 
+    // PDF share lambdas — pass real tableItems so per-item rates are accurate.
+    // tableItems.ifEmpty { null } falls back to description parser for old invoices.
     val onWhatsAppShareClick = {
         val pdfFile = PdfGenerator.generateInvoicePdf(
             context = context,
             invoice = currentInvoice,
             customer = customer,
             payments = payments,
-            businessProfile = businessProfile
+            businessProfile = businessProfile,
+            lineItems = tableItems.ifEmpty { null }
         )
         val defaultName = context.getString(R.string.app_name)
         val bName = businessProfile?.businessName?.takeIf { it.isNotBlank() } ?: defaultName
@@ -153,7 +188,8 @@ fun InvoiceDetailScreen(
             invoice = currentInvoice,
             customer = customer,
             payments = payments,
-            businessProfile = businessProfile
+            businessProfile = businessProfile,
+            lineItems = tableItems.ifEmpty { null }
         )
         PdfShareHelper.sharePdf(context, pdfFile, "Bill ${currentInvoice.billNumber}")
     }
@@ -168,12 +204,13 @@ fun InvoiceDetailScreen(
                     }
                 },
                 actions = {
-                    if (onEditInvoiceClick != null && (currentInvoice.status == "UNPAID" || currentInvoice.status == "PARTIALLY_PAID")) {
+                    if (onEditInvoiceClick != null &&
+                        (currentInvoice.status == "UNPAID" || currentInvoice.status == "PARTIALLY_PAID")
+                    ) {
                         IconButton(onClick = { onEditInvoiceClick(currentInvoice.id) }) {
                             Icon(Icons.Rounded.Edit, contentDescription = "Edit Bill")
                         }
                     }
-
                     IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(Icons.Rounded.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
                     }
@@ -189,7 +226,8 @@ fun InvoiceDetailScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header Card
+
+            // ── Header Card ──────────────────────────────────────────────────
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -209,10 +247,8 @@ fun InvoiceDetailScreen(
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
                         )
-
                         InvoiceStatusBadge(status = currentInvoice.status, balance = balanceDue)
                     }
-
                     Text(
                         text = "Issued: ${DateUtils.formatDateTime(currentInvoice.createdAt)}",
                         style = MaterialTheme.typography.bodySmall,
@@ -221,7 +257,7 @@ fun InvoiceDetailScreen(
                 }
             }
 
-            // Customer Info Card
+            // ── Customer Info Card ───────────────────────────────────────────
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -235,25 +271,18 @@ fun InvoiceDetailScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Customer Info", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     }
-
                     HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
                     Text(
                         text = customer?.name ?: "Customer #${currentInvoice.customerId}",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold
                     )
-
                     if (!customer?.phone.isNullOrEmpty()) {
-                        Text(
-                            text = "Phone: ${customer.phone}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        Text("Phone: ${customer!!.phone}", style = MaterialTheme.typography.bodyMedium)
                     }
-
                     if (!customer?.address.isNullOrEmpty()) {
                         Text(
-                            text = "Address: ${customer.address}",
+                            text = "Address: ${customer!!.address}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -261,76 +290,22 @@ fun InvoiceDetailScreen(
                 }
             }
 
-            // Bill Summary & Balance Breakdown
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Text("Bill Details", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-
-                    HorizontalDivider()
-
-                    Text(
-                        text = currentInvoice.description,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("Subtotal:", style = MaterialTheme.typography.bodyMedium)
-                        Text(CurrencyFormatter.formatCurrency(currentInvoice.amount), style = MaterialTheme.typography.bodyMedium)
-                    }
-
-                    if (currentInvoice.discount > 0) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("Discount:", style = MaterialTheme.typography.bodyMedium)
-                            Text("- ${CurrencyFormatter.formatCurrency(currentInvoice.discount)}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
-                        }
-                    }
-
-                    HorizontalDivider()
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("Total Amount:", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text(CurrencyFormatter.formatCurrency(currentInvoice.total), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("Received Amount:", style = MaterialTheme.typography.bodyMedium)
-                        Text(CurrencyFormatter.formatCurrency(totalPaid), style = MaterialTheme.typography.bodyMedium, color = Color(0xFF15803D), fontWeight = FontWeight.SemiBold)
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Outstanding Balance:", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text(
-                            text = CurrencyFormatter.formatCurrency(balanceDue),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = if (balanceDue > 0) MaterialTheme.colorScheme.error else Color(0xFF15803D)
-                        )
-                    }
-                }
+            // ── Bill Items Card ──────────────────────────────────────────────
+            // Shows itemised table + subtotal + discount + grand total +
+            // received + outstanding balance. No customer info, no branding.
+            Card(modifier = Modifier.fillMaxWidth()) {
+                BillItemsCard(
+                    items = billLineItems,
+                    subtotal = currentInvoice.amount,
+                    discount = currentInvoice.discount,
+                    grandTotal = currentInvoice.total,
+                    paidAmount = totalPaid,
+                    balanceDue = balanceDue,
+                    title = "Bill Items"
+                )
             }
 
-            // Payment History Section
+            // ── Payment History Section ──────────────────────────────────────
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
@@ -349,7 +324,6 @@ fun InvoiceDetailScreen(
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Payment History", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         }
-
                         if (balanceDue > 0) {
                             Button(
                                 onClick = { showAddPaymentDialog = true },
@@ -361,9 +335,7 @@ fun InvoiceDetailScreen(
                             }
                         }
                     }
-
                     HorizontalDivider()
-
                     if (payments.isEmpty()) {
                         Text(
                             text = "No payments recorded yet.",
@@ -382,47 +354,36 @@ fun InvoiceDetailScreen(
                 }
             }
 
-            // Prominent Action Buttons: WhatsApp + Share PDF
+            // ── Action Buttons: WhatsApp + Share PDF ─────────────────────────
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Button(
                     onClick = onWhatsAppShareClick,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(50.dp),
+                    modifier = Modifier.weight(1f).height(50.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF25D366),
                         contentColor = Color.White
                     )
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Share,
-                        contentDescription = "Share via WhatsApp",
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Icon(Icons.Rounded.Share, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("WhatsApp", fontWeight = FontWeight.Bold)
                 }
-
                 OutlinedButton(
                     onClick = onStandardShareClick,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(50.dp)
+                    modifier = Modifier.weight(1f).height(50.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Share,
-                        contentDescription = "Share PDF",
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Icon(Icons.Rounded.Share, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("Share PDF", fontWeight = FontWeight.Bold)
                 }
             }
         }
     }
+
+    // ── Dialogs ──────────────────────────────────────────────────────────────
 
     if (showAddPaymentDialog) {
         AddPaymentDialog(
@@ -446,14 +407,10 @@ fun InvoiceDetailScreen(
                         onBackClick()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Delete")
-                }
+                ) { Text("Delete") }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
-                }
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
             }
         )
     }
@@ -471,14 +428,10 @@ fun InvoiceDetailScreen(
                         paymentToDelete = null
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Delete")
-                }
+                ) { Text("Delete") }
             },
             dismissButton = {
-                TextButton(onClick = { paymentToDelete = null }) {
-                    Text("Cancel")
-                }
+                TextButton(onClick = { paymentToDelete = null }) { Text("Cancel") }
             }
         )
     }
@@ -517,13 +470,12 @@ fun PaymentTimelineItem(
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF15803D)
             )
-
             Text(
-                text = "Mode: ${payment.paymentMode.replace("_", " ")}" + (if (payment.notes.isNotEmpty()) " • ${payment.notes}" else ""),
+                text = "Mode: ${payment.paymentMode.replace("_", " ")}" +
+                        (if (payment.notes.isNotEmpty()) " • ${payment.notes}" else ""),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-
             Text(
                 text = DateUtils.formatDate(payment.date),
                 style = MaterialTheme.typography.labelSmall,

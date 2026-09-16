@@ -9,3 +9,36 @@ data class InvoiceLineItem(
 ) {
     val totalAmount: Double get() = unitRate * quantity
 }
+
+// --- Mapping extensions ---
+
+fun InvoiceLineItem.toEntity(invoiceId: Long): InvoiceLineItemEntity =
+    InvoiceLineItemEntity(
+        invoiceId = invoiceId,
+        quotationId = null,
+        inventoryItemId = inventoryItemId,
+        description = description,
+        unit = unit,
+        unitRate = unitRate,
+        quantity = quantity
+    )
+
+fun InvoiceLineItem.toQuotationEntity(quotationId: Long): InvoiceLineItemEntity =
+    InvoiceLineItemEntity(
+        invoiceId = null,
+        quotationId = quotationId,
+        inventoryItemId = inventoryItemId,
+        description = description,
+        unit = unit,
+        unitRate = unitRate,
+        quantity = quantity
+    )
+
+fun InvoiceLineItemEntity.toDomain(): InvoiceLineItem =
+    InvoiceLineItem(
+        inventoryItemId = inventoryItemId,
+        description = description,
+        unit = unit,
+        unitRate = unitRate,
+        quantity = quantity
+    )

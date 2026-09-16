@@ -14,12 +14,14 @@ class AppRepository private constructor(context: Context) {
 
     val invoiceRepository = InvoiceRepository(
         db.invoiceDao(),
-        db.paymentDao()
+        db.paymentDao(),
+        db.invoiceLineItemDao()
     )
 
     val quotationRepository = QuotationRepository(
         db.quotationDao(),
-        db.invoiceDao()
+        db.invoiceDao(),
+        db.invoiceLineItemDao()
     )
 
     val paymentRepository = PaymentRepository(

@@ -1,18 +1,25 @@
 package com.example.hisabbook.data.repository
 
 import com.example.hisabbook.data.local.dao.InvoiceDao
+import com.example.hisabbook.data.local.dao.InvoiceLineItemDao
 import com.example.hisabbook.data.local.dao.QuotationDao
 import com.example.hisabbook.data.local.entity.Invoice
+import com.example.hisabbook.data.local.entity.InvoiceLineItem
 import com.example.hisabbook.data.local.entity.Quotation
+import com.example.hisabbook.data.local.entity.toDomain
+import com.example.hisabbook.data.local.entity.toEntity
+import com.example.hisabbook.data.local.entity.toQuotationEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.util.Calendar
 import java.util.Locale
 
 class QuotationRepository(
     private val quotationDao: QuotationDao,
-    private val invoiceDao: InvoiceDao
+    private val invoiceDao: InvoiceDao,
+    private val lineItemDao: InvoiceLineItemDao
 ) {
     val allQuotations: Flow<List<Quotation>> = quotationDao.getAllQuotations()
 
@@ -20,6 +27,11 @@ class QuotationRepository(
 
     fun getQuotationsForCustomer(customerId: Long): Flow<List<Quotation>> =
         quotationDao.getQuotationsForCustomer(customerId)
+
+    fun getLineItemsForQuotation(quotationId: Long): Flow<List<InvoiceLineItem>> =
+        lineItemDao.getLineItemsForQuotation(quotationId).map { entities ->
+            entities.map { it.toDomain() }
+        }
 
     suspend fun generateNextQuotationNumber(): String = withContext(Dispatchers.IO) {
         val maxId = quotationDao.getMaxId() ?: 0L
@@ -35,7 +47,8 @@ class QuotationRepository(
         amount: Double,
         discount: Double,
         notes: String = "",
-        status: String = "Draft"
+        status: String = "Draft",
+        lineItems: List<InvoiceLineItem> = emptyList()
     ): Long = withContext(Dispatchers.IO) {
         val validQuantity = quantity.coerceAtLeast(0.0)
         val validAmount = amount.coerceAtLeast(0.0)
@@ -52,10 +65,17 @@ class QuotationRepository(
             status = status,
             notes = notes
         )
-        quotationDao.insertQuotation(quotation)
+        val id = quotationDao.insertQuotation(quotation)
+        if (lineItems.isNotEmpty()) {
+            lineItemDao.insertAll(lineItems.map { it.toQuotationEntity(id) })
+        }
+        id
     }
 
-    suspend fun updateQuotation(quotation: Quotation) = withContext(Dispatchers.IO) {
+    suspend fun updateQuotation(
+        quotation: Quotation,
+        lineItems: List<InvoiceLineItem> = emptyList()
+    ) = withContext(Dispatchers.IO) {
         val validQuantity = quotation.quantity.coerceAtLeast(0.0)
         val validAmount = quotation.amount.coerceAtLeast(0.0)
         val validDiscount = quotation.discount.coerceAtLeast(0.0)
@@ -68,9 +88,15 @@ class QuotationRepository(
                 total = total
             )
         )
+        // Replace all line items
+        lineItemDao.deleteByQuotationId(quotation.id)
+        if (lineItems.isNotEmpty()) {
+            lineItemDao.insertAll(lineItems.map { it.toQuotationEntity(quotation.id) })
+        }
     }
 
     suspend fun deleteQuotation(quotation: Quotation) = withContext(Dispatchers.IO) {
+        lineItemDao.deleteByQuotationId(quotation.id)
         quotationDao.deleteQuotation(quotation)
     }
 
@@ -80,9 +106,14 @@ class QuotationRepository(
 
     /**
      * Converts a quotation to a bill/invoice.
-     * Marks the quotation as "CONVERTED" and creates a corresponding Invoice entity.
+     * Copies quotation line items → invoice line items so the new invoice immediately
+     * shows correct per-item rates.
+     * Marks the quotation as "CONVERTED".
      */
-    suspend fun convertToInvoice(quotationId: Long, billNumber: String): Long? = withContext(Dispatchers.IO) {
+    suspend fun convertToInvoice(
+        quotationId: Long,
+        billNumber: String
+    ): Long? = withContext(Dispatchers.IO) {
         val quotation = quotationDao.getQuotationByIdOneShot(quotationId) ?: return@withContext null
 
         val invoice = Invoice(
@@ -97,6 +128,15 @@ class QuotationRepository(
         )
 
         val invoiceId = invoiceDao.insertInvoice(invoice)
+
+        // Copy quotation line items to the new invoice
+        val quotationLineItems = lineItemDao.getLineItemsForQuotationOneShot(quotationId)
+        if (quotationLineItems.isNotEmpty()) {
+            lineItemDao.insertAll(
+                quotationLineItems.map { it.copy(id = 0, invoiceId = invoiceId, quotationId = null) }
+            )
+        }
+
         quotationDao.updateStatus(quotationId, "CONVERTED")
         invoiceId
     }

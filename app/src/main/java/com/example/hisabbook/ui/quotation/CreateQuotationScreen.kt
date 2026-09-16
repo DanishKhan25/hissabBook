@@ -616,6 +616,7 @@ fun CreateQuotationScreen(
                                 discount = discount,
                                 notes = notes.trim(),
                                 status = selectedStatus,
+                                lineItems = lineItems,
                                 onSuccess = {
                                     onQuotationCreated(quotationToEdit.id)
                                 }
@@ -629,6 +630,7 @@ fun CreateQuotationScreen(
                                 discount = discount,
                                 notes = notes.trim(),
                                 status = selectedStatus,
+                                lineItems = lineItems,
                                 onSuccess = { createdId ->
                                     onQuotationCreated(createdId)
                                 }

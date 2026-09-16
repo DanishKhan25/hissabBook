@@ -17,6 +17,7 @@ import com.example.hisabbook.data.repository.PaymentRepository
 import com.example.hisabbook.data.repository.QuotationRepository
 import com.example.hisabbook.util.CurrencyFormatter
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -132,6 +133,9 @@ class InvoiceViewModel(
 
     fun getInvoiceOutstandingAmount(invoiceId: Long) = invoiceRepository.getInvoiceOutstandingAmount(invoiceId)
 
+    fun getLineItemsForInvoice(invoiceId: Long): Flow<List<InvoiceLineItem>> =
+        invoiceRepository.getLineItemsForInvoice(invoiceId)
+
     fun createInvoice(
         customerId: Long,
         description: String,
@@ -149,7 +153,8 @@ class InvoiceViewModel(
                 description = description,
                 amount = amount,
                 discount = discount,
-                quotationId = quotationId
+                quotationId = quotationId,
+                lineItems = lineItems
             )
 
             // Deduct stock for inventory items in line items
@@ -219,7 +224,7 @@ class InvoiceViewModel(
                     discount = discount,
                     total = total
                 )
-                invoiceRepository.updateInvoice(updated)
+                invoiceRepository.updateInvoice(updated, lineItems)
                 withContext(Dispatchers.Main) { onSuccess() }
             }
         }

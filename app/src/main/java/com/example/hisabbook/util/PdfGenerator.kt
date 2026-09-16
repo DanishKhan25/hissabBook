@@ -735,7 +735,7 @@ object PdfGenerator {
         drawTextWrapped(canvas, amountWordsStr, rightTableLeftX, rightY, (PAGE_WIDTH - MARGIN) - rightTableLeftX, wordsValuePaint)
     }
 
-    private fun parseItemsFromDescription(
+    fun parseItemsFromDescription(
         rawDescription: String,
         fallbackAmount: Double,
         customItems: List<TableItem>?

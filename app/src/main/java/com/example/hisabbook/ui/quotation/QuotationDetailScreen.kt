@@ -50,6 +50,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.hisabbook.R
+import com.example.hisabbook.ui.components.BillItemsCard
+import com.example.hisabbook.ui.components.BillLineItem
 import com.example.hisabbook.ui.viewmodel.QuotationViewModel
 import com.example.hisabbook.ui.viewmodel.SettingsViewModel
 import com.example.hisabbook.util.CurrencyFormatter
@@ -77,6 +79,42 @@ fun QuotationDetailScreen(
 
     val currentQuotation = quotation
     val customer = customers.find { it.id == currentQuotation?.customerId }
+
+    // Collect persisted line items — same pattern as InvoiceDetailScreen.
+    // For old quotations (pre-persistence) this will be empty and BillItemsCard
+    // will fall back to showing "No items added."
+    val lineItems by quotationViewModel.getLineItemsForQuotation(quotationId)
+        .collectAsStateWithLifecycle(initialValue = emptyList())
+
+    val billLineItems: List<BillLineItem> = remember(lineItems) {
+        lineItems.map { item ->
+            BillLineItem(
+                name = item.description,
+                quantity = item.quantity,
+                unit = item.unit,
+                rate = item.unitRate,
+                amount = item.unitRate * item.quantity
+            )
+        }
+    }
+
+    val tableItems: List<PdfGenerator.TableItem> = remember(lineItems) {
+        lineItems.map { item ->
+            PdfGenerator.TableItem(
+                description = item.description,
+                quantity = item.quantity,
+                unit = item.unit,
+                rate = item.unitRate,
+                amount = item.unitRate * item.quantity
+            )
+        }
+    }
+
+    // Subtotal from persisted items; fall back to entity total for old data
+    val subtotal = remember(billLineItems, currentQuotation) {
+        val sum = billLineItems.sumOf { it.amount }
+        if (sum > 0) sum else currentQuotation?.let { it.quantity * it.amount } ?: 0.0
+    }
 
     if (currentQuotation == null) {
         Scaffold(
@@ -108,7 +146,8 @@ fun QuotationDetailScreen(
             context = context,
             quotation = currentQuotation,
             customer = customer,
-            businessProfile = businessProfile
+            businessProfile = businessProfile,
+            lineItems = tableItems.ifEmpty { null }
         )
         val defaultName = context.getString(R.string.app_name)
         val bName = businessProfile?.businessName?.takeIf { it.isNotBlank() } ?: defaultName
@@ -136,7 +175,8 @@ fun QuotationDetailScreen(
             context = context,
             quotation = currentQuotation,
             customer = customer,
-            businessProfile = businessProfile
+            businessProfile = businessProfile,
+            lineItems = tableItems.ifEmpty { null }
         )
         PdfShareHelper.sharePdf(context, pdfFile, "Quotation ${currentQuotation.quotationNumber}")
     }
@@ -151,12 +191,13 @@ fun QuotationDetailScreen(
                     }
                 },
                 actions = {
-                    if (onEditQuotationClick != null && !currentQuotation.status.equals("CONVERTED", ignoreCase = true)) {
+                    if (onEditQuotationClick != null &&
+                        !currentQuotation.status.equals("CONVERTED", ignoreCase = true)
+                    ) {
                         IconButton(onClick = { onEditQuotationClick(currentQuotation.id) }) {
                             Icon(Icons.Rounded.Edit, contentDescription = "Edit Quotation")
                         }
                     }
-
                     IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(Icons.Rounded.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
                     }
@@ -172,7 +213,8 @@ fun QuotationDetailScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header Card
+
+            // ── Header Card ──────────────────────────────────────────────────
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -196,9 +238,12 @@ fun QuotationDetailScreen(
                         Box {
                             OutlinedButton(onClick = { showStatusMenu = true }) {
                                 Text(currentQuotation.status)
-                                Icon(Icons.Rounded.Edit, contentDescription = "Change Status", modifier = Modifier.padding(start = 4.dp))
+                                Icon(
+                                    Icons.Rounded.Edit,
+                                    contentDescription = "Change Status",
+                                    modifier = Modifier.padding(start = 4.dp)
+                                )
                             }
-
                             DropdownMenu(
                                 expanded = showStatusMenu,
                                 onDismissRequest = { showStatusMenu = false }
@@ -224,7 +269,7 @@ fun QuotationDetailScreen(
                 }
             }
 
-            // Customer Details Card
+            // ── Customer Info Card ───────────────────────────────────────────
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -238,25 +283,18 @@ fun QuotationDetailScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Customer Info", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     }
-
                     HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
                     Text(
                         text = customer?.name ?: "Customer #${currentQuotation.customerId}",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold
                     )
-
                     if (!customer?.phone.isNullOrEmpty()) {
-                        Text(
-                            text = "Phone: ${customer.phone}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        Text("Phone: ${customer!!.phone}", style = MaterialTheme.typography.bodyMedium)
                     }
-
                     if (!customer?.address.isNullOrEmpty()) {
                         Text(
-                            text = "Address: ${customer.address}",
+                            text = "Address: ${customer!!.address}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -264,71 +302,18 @@ fun QuotationDetailScreen(
                 }
             }
 
-            // Line Items Breakdown Card
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Text("Quotation Items", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-
-                    HorizontalDivider()
-
-                    Text(
-                        text = currentQuotation.description,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "Qty: ${currentQuotation.quantity}  @ ₹${CurrencyFormatter.formatAmountOnly(currentQuotation.amount)}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = CurrencyFormatter.formatCurrency(currentQuotation.quantity * currentQuotation.amount),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-
-                    if (currentQuotation.discount > 0) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("Discount:", style = MaterialTheme.typography.bodyMedium)
-                            Text(
-                                text = "- ${CurrencyFormatter.formatCurrency(currentQuotation.discount)}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    }
-
-                    HorizontalDivider()
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Total Amount:", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                        Text(
-                            text = CurrencyFormatter.formatCurrency(currentQuotation.total),
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
+            // ── Quotation Items Card ─────────────────────────────────────────
+            Card(modifier = Modifier.fillMaxWidth()) {
+                BillItemsCard(
+                    items = billLineItems,
+                    subtotal = subtotal,
+                    discount = currentQuotation.discount,
+                    grandTotal = currentQuotation.total,
+                    title = "Quotation Items"
+                )
             }
 
+            // ── Notes Card (when present) ────────────────────────────────────
             if (currentQuotation.notes.isNotEmpty()) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -342,9 +327,9 @@ fun QuotationDetailScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
-            // Action Buttons
+            // ── Convert to Invoice ───────────────────────────────────────────
             if (!currentQuotation.status.equals("CONVERTED", ignoreCase = true)) {
                 Button(
                     onClick = {
@@ -363,41 +348,28 @@ fun QuotationDetailScreen(
                 }
             }
 
-            // Prominent Action Buttons: WhatsApp + Share PDF
+            // ── Action Buttons: WhatsApp + Share PDF ─────────────────────────
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Button(
                     onClick = onWhatsAppShareClick,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(50.dp),
+                    modifier = Modifier.weight(1f).height(50.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF25D366),
                         contentColor = Color.White
                     )
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Share,
-                        contentDescription = "Share via WhatsApp",
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Icon(Icons.Rounded.Share, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("WhatsApp", fontWeight = FontWeight.Bold)
                 }
-
                 OutlinedButton(
                     onClick = onStandardShareClick,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(50.dp)
+                    modifier = Modifier.weight(1f).height(50.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Share,
-                        contentDescription = "Share PDF",
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Icon(Icons.Rounded.Share, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("Share PDF", fontWeight = FontWeight.Bold)
                 }
@@ -418,14 +390,10 @@ fun QuotationDetailScreen(
                         onBackClick()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Delete")
-                }
+                ) { Text("Delete") }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
-                }
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
             }
         )
     }

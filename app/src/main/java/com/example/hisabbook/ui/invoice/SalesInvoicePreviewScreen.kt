@@ -283,6 +283,13 @@ fun QuotationPreviewScreen(
     )
 }
 
+/**
+ * Embeddable invoice preview — renders the full invoice layout as a plain Surface+Column
+ * with NO Scaffold and NO verticalScroll, so it can be safely nested inside any parent
+ * scrollable layout (e.g. InvoiceDetailScreen's Column + verticalScroll).
+ *
+ * For standalone full-screen use, SalesInvoicePreviewScreen wraps this with Scaffold.
+ */
 @Composable
 fun InvoiceDocumentPreview(
     invoice: Invoice,
@@ -321,25 +328,77 @@ fun InvoiceDocumentPreview(
     val bal = (invoice.total - totalPaid).coerceAtLeast(0.0)
     val currBal = bal + previousBalanceVal
 
-    SalesInvoicePreviewScreen(
-        modifier = modifier,
-        businessName = bName,
-        businessPhone = bPhone,
-        invoiceNo = invoice.billNumber,
-        invoiceDate = invDateStr,
-        dueDate = dueDateStr,
-        customerName = custName,
-        customerPhone = custPhone,
-        items = displayItems,
-        totalQty = "${displayItems.size} PCS",
-        subtotalAmount = CurrencyFormatter.formatCurrency(invoice.amount),
-        totalAmount = CurrencyFormatter.formatCurrency(invoice.total),
-        receivedAmount = CurrencyFormatter.formatCurrency(totalPaid),
-        balanceAmount = CurrencyFormatter.formatCurrency(bal),
-        previousBalance = CurrencyFormatter.formatCurrency(previousBalanceVal),
-        currentBalance = CurrencyFormatter.formatCurrency(currBal),
-        amountInWords = NumberToWords.convertToWordsCapitalized(invoice.total)
-    )
+    // Use Surface+Column directly (no Scaffold / no verticalScroll) so this composable
+    // can be safely embedded inside InvoiceDetailScreen's own scroll container.
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(2.dp),
+        color = Color.White,
+        shadowElevation = 1.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp)
+        ) {
+            SalesInvoiceHeaderSection(
+                docTypeTag = stringResource(id = R.string.bill_of_supply),
+                badgeText = stringResource(id = R.string.original),
+                accentColor = Color(0xFFC59B27),
+                businessName = bName,
+                businessPhone = bPhone
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            SalesInvoiceMetadataBar(
+                docNumberLabel = stringResource(id = R.string.invoice_no_label),
+                docNumber = invoice.billNumber,
+                dateLabel = stringResource(id = R.string.invoice_date_label),
+                invoiceDate = invDateStr,
+                dueDateLabel = stringResource(id = R.string.due_date_label),
+                dueDate = dueDateStr,
+                bgColor = Color(0xFFEEEEEE)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            SalesInvoiceBillToSection(
+                recipientTitle = stringResource(id = R.string.bill_to_label),
+                customerName = custName,
+                customerPhone = custPhone
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            SalesInvoiceItemsTable(
+                items = displayItems,
+                totalQty = "${displayItems.size} PCS",
+                subtotalLabel = stringResource(id = R.string.subtotal),
+                subtotalAmount = CurrencyFormatter.formatCurrency(invoice.amount),
+                accentColor = Color(0xFFC59B27),
+                itemColHeader = stringResource(id = R.string.items),
+                rateColHeader = stringResource(id = R.string.rate_label),
+                amountColHeader = stringResource(id = R.string.amount)
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            SalesInvoiceSummarySection(
+                totalAmountLabel = stringResource(id = R.string.grand_total),
+                totalAmount = CurrencyFormatter.formatCurrency(invoice.total),
+                receivedAmount = CurrencyFormatter.formatCurrency(totalPaid),
+                balanceAmount = CurrencyFormatter.formatCurrency(bal),
+                previousBalance = CurrencyFormatter.formatCurrency(previousBalanceVal),
+                currentBalance = CurrencyFormatter.formatCurrency(currBal),
+                amountInWordsTitle = stringResource(id = R.string.total_amount_in_words),
+                amountInWords = NumberToWords.convertToWordsCapitalized(invoice.total),
+                termsLine1 = stringResource(id = R.string.terms_line_1),
+                termsLine2 = stringResource(id = R.string.terms_line_2),
+                isQuotation = false
+            )
+        }
+    }
 }
 
 @Composable

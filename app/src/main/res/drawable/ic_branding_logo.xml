@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Outer Golden Frame -->
+    <path android:pathData="M8,6 L40,6 C42,6 43,7 43,9 L43,39 C43,41 42,42 40,42 L8,42 C6,42 5,41 5,39 L5,9 C5,7 6,6 8,6 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="5"
+                android:startY="6"
+                android:endX="43"
+                android:endY="42"
+                android:type="linear">
+                <item android:color="#FFF59E0B" android:offset="0.0" />
+                <item android:color="#FFD4AF37" android:offset="0.5" />
+                <item android:color="#FFC5A028" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Inner Housing -->
+    <path
+        android:pathData="M9,9 L39,9 L39,39 L9,39 Z"
+        android:fillColor="#FF1E293B" />
+
+    <!-- Cyan Glass Panes -->
+    <path android:pathData="M10,10 L22,10 L22,22 L10,22 Z" android:fillColor="#E600B4D8" />
+    <path android:pathData="M26,10 L38,10 L38,22 L26,22 Z" android:fillColor="#E690E0EF" />
+    <path android:pathData="M10,26 L22,26 L22,38 L10,38 Z" android:fillColor="#CC0077B6" />
+    <path android:pathData="M26,26 L38,26 L38,38 L26,38 Z" android:fillColor="#E600B4D8" />
+
+    <!-- Glass Reflections -->
+    <path android:pathData="M10,10 L18,10 L10,18 Z" android:fillColor="#66FFFFFF" />
+    <path android:pathData="M26,10 L32,10 L26,16 Z" android:fillColor="#55FFFFFF" />
+    <path android:pathData="M18,10 L22,10 L10,22 L10,18 Z" android:fillColor="#35FFFFFF" />
+
+    <!-- Mullion Cross Bars (Golden Yellow) -->
+    <path android:pathData="M23,6 L25,6 L25,42 L23,42 Z" android:fillColor="#FFD4AF37" />
+    <path android:pathData="M5,23 L43,23 L43,25 L5,25 Z" android:fillColor="#FFD4AF37" />
+
+    <!-- Central Diamond Monogram Crest -->
+    <path android:pathData="M24,17 L31,24 L24,31 L17,24 Z" android:fillColor="#FF2C3E50" />
+    <path android:pathData="M24,18 L30,24 L24,30 L18,24 Z" android:fillColor="#FFD4AF37" />
+    <path android:pathData="M24,20 L28,24 L24,28 L20,24 Z" android:fillColor="#FF00B4D8" />
+    <path
+        android:pathData="M22,21 L26,21 M24,21 L24,27 M22,27 L26,27"
+        android:strokeWidth="1.2"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round" />
+
+</vector>

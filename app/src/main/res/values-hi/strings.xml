@@ -1,0 +1,217 @@
+<resources>
+    <string name="app_name">हिसाबबुक</string>
+
+    <!-- General & Common -->
+    <string name="ok">ठीक है</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="save">सहेजें</string>
+    <string name="update">अपडेट करें</string>
+    <string name="delete">हटाएं</string>
+    <string name="edit">संपादित करें</string>
+    <string name="add">जोड़ें</string>
+    <string name="search">खोजें</string>
+    <string name="filter">फ़िल्टर</string>
+    <string name="share">शेयर करें</string>
+    <string name="print">प्रिंट करें</string>
+    <string name="confirm">पुष्टि करें</string>
+    <string name="back">वापस</string>
+    <string name="done">हो गया</string>
+    <string name="retry">पुनः प्रयास करें</string>
+    <string name="close">बंद करें</string>
+    <string name="clear">साफ़ करें</string>
+    <string name="view_all">सभी देखें</string>
+    <string name="total">कुल</string>
+    <string name="subtotal">उप-योग</string>
+    <string name="grand_total">कुल राशि</string>
+    <string name="discount">छूट</string>
+    <string name="amount">राशि</string>
+    <string name="status">स्थिति</string>
+    <string name="date">दिनांक</string>
+    <string name="notes">टिप्पणी</string>
+    <string name="actions">कार्रवाई</string>
+    <string name="details">विवरण</string>
+    <string name="history">इतिहास</string>
+    <string name="yes">हां</string>
+    <string name="no">नहीं</string>
+
+    <!-- Navigation Tabs -->
+    <string name="nav_home">होम</string>
+    <string name="nav_customers">ग्राहक</string>
+    <string name="nav_invoices">बिल</string>
+    <string name="nav_quotations">कोटेशन</string>
+    <string name="nav_inventory">स्टॉक</string>
+    <string name="nav_payments">भुगतान</string>
+    <string name="nav_settings">सेटिंग्स</string>
+
+    <!-- Dashboard / Home -->
+    <string name="dashboard_title">मुख्य पृष्ठ</string>
+    <string name="todays_sales">आज की बिक्री</string>
+    <string name="total_sales">कुल बिक्री</string>
+    <string name="total_outstanding">कुल बकाया संतुलन</string>
+    <string name="customer_outstanding_balance">ग्राहकों का बकाया संतुलन</string>
+    <string name="total_customers_count">कुल ग्राहक</string>
+    <string name="low_stock_warning">कम स्टॉक चेतावनी</string>
+    <string name="low_stock_items_count">कम स्टॉक: %1$d सामग्री</string>
+    <string name="total_collected">कुल प्राप्त राशि</string>
+    <string name="pending_quotations">लंबित कोटेशन</string>
+    <string name="low_stock_alerts">कम स्टॉक चेतावनी</string>
+    <string name="recent_activity">हाल की गतिविधियां</string>
+    <string name="recent_invoices">हाल के बिल व भुगतान</string>
+    <string name="quick_actions">त्वरित कार्य</string>
+    <string name="quick_action_new_quotation">नया कोटेशन</string>
+    <string name="quick_action_new_bill">नया बिल</string>
+    <string name="quick_action_add_payment">भुगतान जोड़ें</string>
+    <string name="quick_action_add_stock">स्टॉक जोड़ें</string>
+
+    <!-- Onboarding & Language -->
+    <string name="onboarding_title">हिसाबबुक में आपका स्वागत है</string>
+    <string name="onboarding_subtitle">शुरू करने के लिए अपनी व्यापार प्रोफ़ाइल सेट करें</string>
+    <string name="select_language">भाषा चुनें</string>
+    <string name="get_started">शुरू करें</string>
+    <string name="app_tagline_default">फैब्रिकेशन, स्लाइडिंग विंडोज और टफन्ड ग्लास वर्क</string>
+    <string name="business_name_default">IMAGE ALUMINIUM AND GLASS</string>
+
+    <!-- Backup & Restore -->
+    <string name="backup_data">डेटा बैकअप लें</string>
+    <string name="restore_data">डेटा रीस्टोर करें</string>
+    <string name="backup_data_desc">सभी डेटाबेस डेटा को JSON में निर्यात करें</string>
+    <string name="restore_data_desc">JSON बैकअप फ़ाइल आयात कर डेटा रीस्टोर करें</string>
+    <string name="restore_confirm_title">डेटाबेस रीस्टोर करें?</string>
+    <string name="restore_confirm_msg">रीस्टोर करने से आपका वर्तमान डेटा चुनी गई JSON बैकअप फ़ाइल से बदल दिया जाएगा। क्या आप आगे बढ़ना चाहते हैं?</string>
+
+    <!-- Customers -->
+    <string name="customers_title">ग्राहक सूची</string>
+    <string name="add_customer">नया ग्राहक जोड़ें</string>
+    <string name="edit_customer">ग्राहक संपादित करें</string>
+    <string name="delete_customer">ग्राहक हटाएं</string>
+    <string name="customer_name">ग्राहक का नाम</string>
+    <string name="customer_phone">फोन नंबर</string>
+    <string name="customer_address">पता</string>
+    <string name="customer_details">ग्राहक का विवरण</string>
+    <string name="customer_outstanding">बकाया राशि</string>
+    <string name="customer_invoices">ग्राहक के बिल</string>
+    <string name="customer_payments">ग्राहक के भुगतान</string>
+    <string name="no_customers">कोई ग्राहक नहीं मिला</string>
+    <string name="confirm_delete_customer">क्या आप वाकई इस ग्राहक को हटाना चाहते हैं?</string>
+    <string name="search_customer_placeholder">नाम या फोन नंबर से खोजें…</string>
+    <string name="call_customer">कॉल करें</string>
+    <string name="whatsapp_customer">व्हाट्सएप</string>
+
+    <!-- Quotations -->
+    <string name="quotations_title">कोटेशन सूची</string>
+    <string name="create_quotation">नया कोटेशन बनाएं</string>
+    <string name="edit_quotation">कोटेशन संपादित करें</string>
+    <string name="delete_quotation">कोटेशन हटाएं</string>
+    <string name="quotation_number">कोटेशन संख्या</string>
+    <string name="quotation_date">कोटेशन तिथि</string>
+    <string name="quotation_status_pending">लंबित</string>
+    <string name="quotation_status_accepted">स्वीकृत</string>
+    <string name="quotation_status_declined">अस्वीकृत</string>
+    <string name="quotation_status_converted">बिल में परिवर्तित</string>
+    <string name="convert_to_bill">बिल में बदलें</string>
+    <string name="quotation_details">कोटेशन विवरण</string>
+    <string name="no_quotations">कोई कोटेशन नहीं मिला</string>
+    <string name="confirm_delete_quotation">क्या आप वाकई इस कोटेशन को हटाना चाहते हैं?</string>
+    <string name="quotation_notes_placeholder">शर्तें या अतिरिक्त टिप्पणी…</string>
+
+    <!-- Invoices / Bills -->
+    <string name="invoices_title">बिल और चालान</string>
+    <string name="create_bill">नया बिल बनाएं</string>
+    <string name="edit_bill">बिल संपादित करें</string>
+    <string name="delete_bill">बिल हटाएं</string>
+    <string name="bill_number">बिल / चालान संख्या</string>
+    <string name="bill_date">बिल तिथि</string>
+    <string name="due_date">भुगतान तिथि</string>
+    <string name="bill_status_unpaid">बकाया (अदत्त)</string>
+    <string name="bill_status_partially_paid">आंशिक भुगतान</string>
+    <string name="bill_status_paid">चुका दिया (पूर्ण)</string>
+    <string name="bill_status_cancelled">रद्द</string>
+    <string name="balance_due">शेष बकाया</string>
+    <string name="paid_amount">प्राप्त राशि</string>
+    <string name="record_payment_for_bill">भुगतान दर्ज करें</string>
+    <string name="share_invoice">बिल शेयर करें</string>
+    <string name="print_invoice">बिल प्रिंट करें</string>
+    <string name="download_pdf">PDF डाउनलोड करें</string>
+    <string name="no_invoices">कोई बिल नहीं मिला</string>
+    <string name="confirm_delete_bill">क्या आप वाकई इस बिल को हटाना चाहते हैं?</string>
+    <string name="invoice_description">सामग्री / कार्य का विवरण</string>
+
+    <!-- Payments -->
+    <string name="payments_title">भुगतान सूची</string>
+    <string name="record_payment">भुगतान दर्ज करें</string>
+    <string name="edit_payment">भुगतान संपादित करें</string>
+    <string name="delete_payment">भुगतान हटाएं</string>
+    <string name="payment_amount">भुगतान राशि</string>
+    <string name="payment_mode">भुगतान का प्रकार</string>
+    <string name="payment_date">भुगतान की तारीख</string>
+    <string name="payment_mode_cash">नकद (Cash)</string>
+    <string name="payment_mode_upi">यूपीआई (UPI)</string>
+    <string name="payment_mode_bank_transfer">बैंक ट्रांसफर</string>
+    <string name="payment_mode_cheque">चेक</string>
+    <string name="payment_mode_card">कार्ड</string>
+    <string name="payment_mode_other">अन्य</string>
+    <string name="payment_notes">भुगतान टिप्पणी</string>
+    <string name="receipt">रसीद</string>
+    <string name="no_payments">कोई भुगतान नहीं मिला</string>
+    <string name="confirm_delete_payment">क्या आप वाकई इस भुगतान रिकॉर्ड को हटाना चाहते हैं?</string>
+
+    <!-- Inventory / Stock -->
+    <string name="inventory_title">स्टॉक और सामग्री</string>
+    <string name="add_item">नया सामान जोड़ें</string>
+    <string name="edit_item">सामान संपादित करें</string>
+    <string name="delete_item">सामान हटाएं</string>
+    <string name="item_name">सामान का नाम</string>
+    <string name="unit">इकाई (Unit)</string>
+    <string name="quantity">मात्रा</string>
+    <string name="minimum_stock">न्यूनतम स्टॉक स्तर</string>
+    <string name="purchase_price">क्रय मूल्य</string>
+    <string name="stock_value">स्टॉक का मूल्य</string>
+    <string name="stock_status">स्टॉक स्थिति</string>
+    <string name="in_stock">स्टॉक में उपलब्ध</string>
+    <string name="low_stock">कम स्टॉक</string>
+    <string name="out_of_stock">स्टॉक समाप्त</string>
+    <string name="record_stock_in">स्टॉक आवक (+)</string>
+    <string name="record_stock_out">स्टॉक जावक (-)</string>
+    <string name="stock_reason">कारण / विवरण</string>
+    <string name="stock_reference">संदर्भ / संदर्भ सं.</string>
+    <string name="stock_history">स्टॉक इतिहास</string>
+    <string name="unit_pcs">पीस</string>
+    <string name="unit_kg">किग्रा</string>
+    <string name="unit_gram">ग्राम</string>
+    <string name="unit_ltr">लीटर</string>
+    <string name="unit_ml">मिलीलीटर</string>
+    <string name="unit_meter">मीटर</string>
+    <string name="unit_box">डिब्बा</string>
+    <string name="unit_packet">पैकेट</string>
+    <string name="unit_dozen">दर्जन</string>
+    <string name="unit_set">सेट</string>
+    <string name="no_inventory">कोई सामान नहीं मिला</string>
+    <string name="confirm_delete_item">क्या आप वाकई इस सामान को हटाना चाहते हैं?</string>
+
+    <!-- Business Profile & Settings -->
+    <string name="settings_title">सेटिंग्स</string>
+    <string name="business_profile">व्यापार प्रोफ़ाइल</string>
+    <string name="business_name">व्यापार का नाम</string>
+    <string name="business_subtitle">टैगलाइन / उपशीर्षक</string>
+    <string name="business_description">व्यापार का विवरण</string>
+    <string name="business_phone">व्यापार का फोन नंबर</string>
+    <string name="business_address">व्यापार का पता</string>
+    <string name="gst_number">जीएसटी / टैक्स आईडी</string>
+    <string name="currency_symbol">मुद्रा का प्रतीक</string>
+    <string name="language">भाषा</string>
+    <string name="language_english">English</string>
+    <string name="language_hindi">हिन्दी (Hindi)</string>
+    <string name="theme">ऐप थीम</string>
+    <string name="backup_restore">डेटा बैकअप और रीस्टोर</string>
+    <string name="about_app">हिसाबबुक के बारे में</string>
+    <string name="profile_saved_success">व्यापार प्रोफ़ाइल सफलतापूर्वक अपडेट हो गई!</string>
+
+    <!-- Errors & Validations -->
+    <string name="error_name_required">नाम भरना अनिवार्य है</string>
+    <string name="error_phone_invalid">कृपया सही फोन नंबर दर्ज करें</string>
+    <string name="error_amount_invalid">राशि 0 से अधिक होनी चाहिए</string>
+    <string name="error_quantity_invalid">मात्रा 0 से अधिक होनी चाहिए</string>
+    <string name="error_customer_required">कृपया एक ग्राहक चुनें</string>
+    <string name="error_generic">कुछ गलत हो गया। कृपया पुनः प्रयास करें।</string>
+    <string name="error_insufficient_stock">पर्याप्त स्टॉक उपलब्ध नहीं है</string>
+</resources>

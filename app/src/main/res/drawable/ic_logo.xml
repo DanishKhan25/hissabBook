@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Outer Ambient Shadow -->
+    <path
+        android:pathData="M24,18 L96,18 C100,18 102,20 102,24 L102,96 C102,100 100,102 96,102 L24,102 C20,102 18,100 18,96 L18,24 C18,20 20,18 24,18 Z"
+        android:fillColor="#26000000" />
+
+    <!-- 1. Outer Aluminium Frame (Golden Yellow Metallic Gradient) -->
+    <path android:pathData="M24,18 L96,18 C100,18 102,20 102,24 L102,96 C102,100 100,102 96,102 L24,102 C20,102 18,100 18,96 L18,24 C18,20 20,18 24,18 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="18"
+                android:startY="18"
+                android:endX="102"
+                android:endY="102"
+                android:type="linear">
+                <item android:color="#FFF59E0B" android:offset="0.0" />
+                <item android:color="#FFD4AF37" android:offset="0.4" />
+                <item android:color="#FFC5A028" android:offset="0.7" />
+                <item android:color="#FFB4881B" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Inner Frame Housing (Metallic Slate Silver) -->
+    <path
+        android:pathData="M25,25 L95,25 L95,95 L25,95 Z"
+        android:fillColor="#FF1E293B" />
+
+    <!-- 2. Toughened Glass Panes (Pure Glass Cyan Gradient) -->
+    <!-- Top-Left Glass Pane -->
+    <path android:pathData="M28,28 L57,28 L57,57 L28,57 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="28"
+                android:startY="28"
+                android:endX="57"
+                android:endY="57"
+                android:type="linear">
+                <item android:color="#E600B4D8" android:offset="0.0" />
+                <item android:color="#CC0077B6" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Top-Right Glass Pane -->
+    <path android:pathData="M63,28 L92,28 L92,57 L63,57 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="63"
+                android:startY="28"
+                android:endX="92"
+                android:endY="57"
+                android:type="linear">
+                <item android:color="#E690E0EF" android:offset="0.0" />
+                <item android:color="#CC00B4D8" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Bottom-Left Glass Pane -->
+    <path android:pathData="M28,63 L57,63 L57,92 L28,92 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="28"
+                android:startY="63"
+                android:endX="57"
+                android:endY="92"
+                android:type="linear">
+                <item android:color="#CC0077B6" android:offset="0.0" />
+                <item android:color="#E600B4D8" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Bottom-Right Glass Pane -->
+    <path android:pathData="M63,63 L92,63 L92,92 L63,92 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="63"
+                android:startY="63"
+                android:endX="92"
+                android:endY="92"
+                android:type="linear">
+                <item android:color="#E600B4D8" android:offset="0.0" />
+                <item android:color="#CC03045E" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- 3. Glass Glare / Diagonal Light Reflections -->
+    <path
+        android:pathData="M28,28 L50,28 L28,50 Z"
+        android:fillColor="#66FFFFFF" />
+    <path
+        android:pathData="M63,28 L80,28 L63,45 Z"
+        android:fillColor="#55FFFFFF" />
+    <path
+        android:pathData="M42,28 L57,28 L28,57 L28,42 Z"
+        android:fillColor="#40FFFFFF" />
+    <path
+        android:pathData="M78,28 L92,28 L28,92 L28,78 Z"
+        android:fillColor="#30FFFFFF" />
+    <path
+        android:pathData="M63,68 L87,92 L75,92 L63,80 Z"
+        android:fillColor="#35FFFFFF" />
+
+    <!-- 4. Central Structural Mullion Cross Bars -->
+    <!-- Vertical Gold Bar -->
+    <path android:pathData="M57,18 L63,18 L63,102 L57,102 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="57"
+                android:startY="18"
+                android:endX="63"
+                android:endY="102"
+                android:type="linear">
+                <item android:color="#FFF59E0B" android:offset="0.0" />
+                <item android:color="#FFD4AF37" android:offset="0.5" />
+                <item android:color="#FFC5A028" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Horizontal Gold Bar -->
+    <path android:pathData="M18,57 L102,57 L102,63 L18,63 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="18"
+                android:startY="57"
+                android:endX="102"
+                android:endY="63"
+                android:type="linear">
+                <item android:color="#FFF59E0B" android:offset="0.0" />
+                <item android:color="#FFD4AF37" android:offset="0.5" />
+                <item android:color="#FFC5A028" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Highlights and Metallic Bevels -->
+    <path
+        android:pathData="M57,18 L57,102 M18,57 L102,57"
+        android:strokeWidth="1"
+        android:strokeColor="#FFFFF176" />
+    <path
+        android:pathData="M63,18 L63,102 M18,63 L102,63"
+        android:strokeWidth="1"
+        android:strokeColor="#FF78350F" />
+
+    <!-- 5. Central Brand Crest / Diamond "I" Emblem -->
+    <path
+        android:pathData="M60,43 L77,60 L60,77 L43,60 Z"
+        android:fillColor="#FF2C3E50" />
+    <path
+        android:pathData="M60,45 L74,60 L60,75 L46,60 Z"
+        android:fillColor="#FFD4AF37" />
+
+    <!-- Inner Diamond (Pure Cyan Glass) -->
+    <path android:pathData="M60,48 L71,60 L60,72 L49,60 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="49"
+                android:startY="48"
+                android:endX="71"
+                android:endY="72"
+                android:type="linear">
+                <item android:color="#FF00B4D8" android:offset="0.0" />
+                <item android:color="#FF0077B6" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Stylized "I" Monogram -->
+    <path
+        android:pathData="M55,53 L65,53 M60,53 L60,67 M55,67 L65,67"
+        android:strokeWidth="2.5"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round" />
+
+</vector>

@@ -68,8 +68,8 @@
     <string name="onboarding_subtitle">Set up your business profile to get started</string>
     <string name="select_language">Select Language</string>
     <string name="get_started">Get Started</string>
-    <string name="app_tagline_default">Fabrication, Sliding Windows &amp; Toughened Glass Works</string>
-    <string name="business_name_default">IMAGE ALUMINIUM AND GLASS</string>
+    <string name="app_tagline_default">Tagline</string>
+    <string name="business_name_default">Business Name</string>
 
     <!-- Backup & Restore -->
     <string name="backup_data">Backup Data</string>

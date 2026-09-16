@@ -19,9 +19,7 @@ import com.example.hisabbook.data.local.entity.Invoice
 import com.example.hisabbook.data.local.entity.Payment
 import com.example.hisabbook.data.local.entity.Quotation
 import com.example.hisabbook.data.local.entity.StockTransaction
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Database(
@@ -82,14 +80,6 @@ abstract class AppDatabase : RoomDatabase() {
                 .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        DemoDataSeeder.seedDemoData(instance, force = false)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
 
                 instance
             }

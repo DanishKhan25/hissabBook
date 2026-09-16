@@ -16,12 +16,12 @@ object DemoDataSeeder {
     fun getDemoBusinessProfile(): BusinessProfile {
         return BusinessProfile(
             id = 1,
-            businessName = "IMAGE ALUMINIUM & GLASS",
+            businessName = "IMAGE ALUMINIUM AND GLASS",
             subtitle = "Fabrication, Sliding Windows & Toughened Glass Works",
             description = "High Quality Aluminium Fabrication, Glass Fittings & Hardware",
-            phone = "9876543210",
-            address = "Whitefield Main Road",
-            gstNumber = "27AAAAA0000A1Z5",
+            phone = "8999127482",
+            address = "",
+            gstNumber = "",
             languagePreference = "en",
             isOnboardingCompleted = true
         )
@@ -146,6 +146,24 @@ object DemoDataSeeder {
                 amount = 25000.0,
                 paymentMode = "BANK_TRANSFER",
                 notes = "Payment against B-2026-003"
+            )
+        )
+    }
+
+    suspend fun clearAllData(db: AppDatabase) = withContext(Dispatchers.IO) {
+        db.clearAllTables()
+        db.businessProfileDao().insertOrUpdateBusinessProfile(
+            BusinessProfile(
+                id = 1,
+                businessName = "IMAGE ALUMINIUM AND GLASS",
+                subtitle = "Fabrication, Sliding Windows & Toughened Glass Works",
+                description = "",
+                phone = "8999127482",
+                address = "",
+                languagePreference = "en",
+                currencySymbol = "₹",
+                gstNumber = "",
+                isOnboardingCompleted = false
             )
         )
     }

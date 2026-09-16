@@ -59,9 +59,9 @@ fun OnboardingScreen(
     val context = LocalContext.current
     val businessProfile by settingsViewModel.businessProfile.collectAsStateWithLifecycle()
 
-    var businessName by remember { mutableStateOf("IMAGE ALU MINI U M AND GLASS") }
-    var subtitle by remember { mutableStateOf("Fabrication, Sliding Windows & Toughened Glass Works") }
-    var phone by remember { mutableStateOf("") }
+    var businessName by remember { mutableStateOf("Business Name") }
+    var subtitle by remember { mutableStateOf("Subtitle") }
+    var phone by remember { mutableStateOf("999999999") }
     var address by remember { mutableStateOf("") }
     var gstNumber by remember { mutableStateOf("") }
     var selectedLanguage by remember { mutableStateOf("en") }
@@ -266,7 +266,7 @@ fun OnboardingScreen(
             // Get Started Button
             Button(
                 onClick = {
-                    val finalName = businessName.ifBlank { "IMAGE ALU MINI U M AND GLASS" }
+                    val finalName = businessName.ifBlank { "IMAGE ALUMINIUM AND GLASS" }
                     val finalSubtitle = subtitle.ifBlank { "Fabrication, Sliding Windows & Toughened Glass Works" }
                     settingsViewModel.saveBusinessProfile(
                         businessName = finalName,

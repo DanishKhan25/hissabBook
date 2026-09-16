@@ -19,8 +19,10 @@ class BusinessProfileRepository(
         var profile = businessProfileDao.getBusinessProfileOneShot()
         if (profile == null) {
             profile = BusinessProfile(
-                businessName = "IMAGE ALU MINI U M AND GLASS",
-                subtitle = "Fabrication, Sliding Windows & Toughened Glass Works",
+                businessName = "Business Name",
+                subtitle = "Subtitle",
+                phone = "88888888",
+                address = "",
                 languagePreference = "en",
                 isOnboardingCompleted = false
             )

@@ -278,7 +278,7 @@ object PdfGenerator {
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             isAntiAlias = true
         }
-        val businessName = businessProfile?.businessName?.ifEmpty { "IMAGE ALUMINIUM AND GLASS" } ?: "IMAGE ALUMINIUM AND GLASS"
+        val businessName = businessProfile?.businessName?.ifEmpty { "Business Name" } ?: "Business Name"
         canvas.drawText(businessName, MARGIN, y, titlePaint)
 
         y += 15f
@@ -383,7 +383,7 @@ object PdfGenerator {
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             isAntiAlias = true
         }
-        val custName = customer?.name?.ifEmpty { "Sahil" } ?: "Sahil"
+        val custName = customer?.name?.ifEmpty { "Customer" } ?: "Customer"
         canvas.drawText(custName, MARGIN, y, custNamePaint)
 
         y += 13f

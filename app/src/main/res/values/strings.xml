@@ -98,6 +98,7 @@
     <string name="search_customer_placeholder">Search by name or phone...</string>
     <string name="call_customer">Call</string>
     <string name="whatsapp_customer">WhatsApp</string>
+    <string name="whatsapp_template_copied">Message template copied to clipboard! Paste in WhatsApp chat.</string>
 
     <!-- Quotations -->
     <string name="quotations_title">Quotations</string>

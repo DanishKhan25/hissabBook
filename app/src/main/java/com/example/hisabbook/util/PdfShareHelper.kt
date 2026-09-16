@@ -1,10 +1,13 @@
 package com.example.hisabbook.util
 
 import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.core.content.FileProvider
+import com.example.hisabbook.R
 import java.io.File
 
 object PdfShareHelper {
@@ -106,6 +109,22 @@ object PdfShareHelper {
         caption: String,
         customerPhone: String? = null
     ) {
+        if (caption.isNotBlank()) {
+            try {
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                if (clipboard != null) {
+                    val clip = ClipData.newPlainText("Document Details", caption)
+                    clipboard.setPrimaryClip(clip)
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.whatsapp_template_copied),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            } catch (_: Exception) {
+            }
+        }
+
         val uri = FileProvider.getUriForFile(
             context,
             "${context.packageName}.fileprovider",

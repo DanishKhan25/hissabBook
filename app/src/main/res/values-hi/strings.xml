@@ -98,6 +98,7 @@
     <string name="search_customer_placeholder">नाम या फोन नंबर से खोजें…</string>
     <string name="call_customer">कॉल करें</string>
     <string name="whatsapp_customer">व्हाट्सएप</string>
+    <string name="whatsapp_template_copied">संदेश क्लिपबोर्ड पर कॉपी हो गया! व्हाट्सएप चैट में पेस्ट करें।</string>
 
     <!-- Quotations -->
     <string name="quotations_title">कोटेशन सूची</string>

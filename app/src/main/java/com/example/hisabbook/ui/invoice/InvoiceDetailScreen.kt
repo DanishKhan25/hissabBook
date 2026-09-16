@@ -174,18 +174,6 @@ fun InvoiceDetailScreen(
                         }
                     }
 
-                    IconButton(onClick = onWhatsAppShareClick) {
-                        Icon(
-                            imageVector = Icons.Rounded.Share,
-                            contentDescription = "Share on WhatsApp",
-                            tint = Color(0xFF25D366)
-                        )
-                    }
-
-                    IconButton(onClick = onStandardShareClick) {
-                        Icon(Icons.Rounded.Share, contentDescription = "Share PDF")
-                    }
-
                     IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(Icons.Rounded.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
                     }

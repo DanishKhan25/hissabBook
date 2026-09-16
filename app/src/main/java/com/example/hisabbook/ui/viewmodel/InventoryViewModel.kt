@@ -99,7 +99,7 @@ class InventoryViewModel(
             val newItem = InventoryItem(
                 name = trimmedName,
                 unit = unit.ifBlank { "pcs" },
-                quantity = initialQuantity.coerceAtLeast(0.0),
+                quantity = 0.0,
                 minimumStock = minimumStock.coerceAtLeast(0.0),
                 purchasePrice = purchasePrice.coerceAtLeast(0.0)
             )

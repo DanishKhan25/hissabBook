@@ -65,8 +65,10 @@ fun AddPaymentDialog(
             ?: 0L
     }
 
-    val unpaidInvoices = paymentViewModel.getUnpaidInvoicesForCustomer(selectedCustomerId)
-        .collectAsStateWithLifecycle().value
+    val unpaidInvoicesFlow = remember(selectedCustomerId) {
+        paymentViewModel.getUnpaidInvoicesForCustomer(selectedCustomerId)
+    }
+    val unpaidInvoices = unpaidInvoicesFlow.collectAsStateWithLifecycle().value
 
     var selectedBillId by remember(selectedCustomerId, preSelectedBillId) {
         mutableStateOf(preSelectedBillId)
@@ -160,13 +162,17 @@ fun AddPaymentDialog(
                 ) {
                     val selectedBillNumber = unpaidInvoices.find { it.id == selectedBillId }?.let {
                         "Bill #${it.billNumber} (Pending: ${CurrencyFormatter.formatCurrency(outstandingForBill(it.id))})"
-                    } ?: "General Payment (No specific bill)"
+                    } ?: if (selectedBillId != null) {
+                        "Loading bill details..."
+                    } else {
+                        "General Payment (No specific bill)"
+                    }
 
                     OutlinedTextField(
                         value = selectedBillNumber,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text(if (unpaidInvoices.isNotEmpty()) "Link to Bill *" else "Link to Bill (Optional)") },
+                        label = { Text("Link to Bill") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = billDropdownExpanded) },
                         modifier = Modifier
                             .fillMaxWidth()

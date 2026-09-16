@@ -289,12 +289,14 @@ fun QuotationDetailScreen(
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold
                     )
-                    if (!customer?.phone.isNullOrEmpty()) {
-                        Text("Phone: ${customer!!.phone}", style = MaterialTheme.typography.bodyMedium)
+                    val customerPhone = customer?.phone.orEmpty()
+                    val customerAddress = customer?.address.orEmpty()
+                    if (customerPhone.isNotEmpty()) {
+                        Text("Phone: $customerPhone", style = MaterialTheme.typography.bodyMedium)
                     }
-                    if (!customer?.address.isNullOrEmpty()) {
+                    if (customerAddress.isNotEmpty()) {
                         Text(
-                            text = "Address: ${customer!!.address}",
+                            text = "Address: $customerAddress",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

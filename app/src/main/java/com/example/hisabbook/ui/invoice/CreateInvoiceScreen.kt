@@ -63,6 +63,7 @@ import com.example.hisabbook.ui.viewmodel.InvoiceViewModel
 import com.example.hisabbook.util.CurrencyFormatter
 import com.example.hisabbook.util.parseCleanDouble
 import com.example.hisabbook.util.parseCleanDoubleOrDefault
+import kotlinx.coroutines.flow.flowOf
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -82,11 +83,23 @@ fun CreateInvoiceScreen(
     val invoiceToEdit = remember(invoiceIdToEdit, allInvoices) {
         invoiceIdToEdit?.let { invId -> allInvoices.find { it.id == invId } }
     }
+    val existingLineItems by (
+        invoiceIdToEdit?.let { invoiceViewModel.getLineItemsForInvoice(it) }
+            ?: flowOf(emptyList())
+        ).collectAsStateWithLifecycle(initialValue = emptyList())
 
     var selectedCustomerId by remember(preSelectedCustomerId, invoiceToEdit) {
         mutableLongStateOf(
             invoiceToEdit?.customerId ?: preSelectedCustomerId ?: customers.firstOrNull()?.id ?: 0L
         )
+    }
+
+    LaunchedEffect(preSelectedCustomerId, invoiceToEdit, customers) {
+        selectedCustomerId = invoiceToEdit?.customerId
+            ?: preSelectedCustomerId
+            ?: selectedCustomerId.takeIf { it > 0 }
+            ?: customers.firstOrNull()?.id
+            ?: 0L
     }
 
     var selectedQuotationId by remember(preSelectedQuotationId, invoiceToEdit) {
@@ -126,6 +139,12 @@ fun CreateInvoiceScreen(
     var amountError by remember { mutableStateOf<String?>(null) }
 
     val customerQuotations = quotations.filter { it.customerId == selectedCustomerId }
+
+    LaunchedEffect(invoiceIdToEdit, existingLineItems) {
+        if (invoiceIdToEdit != null && lineItems.isEmpty() && existingLineItems.isNotEmpty()) {
+            lineItems = existingLineItems
+        }
+    }
 
     // If pre-selected quotation is provided, auto-fill
     LaunchedEffect(selectedQuotationId) {

@@ -62,6 +62,7 @@ import com.example.hisabbook.ui.viewmodel.QuotationViewModel
 import com.example.hisabbook.util.CurrencyFormatter
 import com.example.hisabbook.util.parseCleanDouble
 import com.example.hisabbook.util.parseCleanDoubleOrDefault
+import kotlinx.coroutines.flow.flowOf
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -79,6 +80,10 @@ fun CreateQuotationScreen(
     val quotationToEdit = remember(quotationIdToEdit, allQuotations) {
         quotationIdToEdit?.let { qId -> allQuotations.find { it.id == qId } }
     }
+    val existingLineItems by (
+        quotationIdToEdit?.let { quotationViewModel.getLineItemsForQuotation(it) }
+            ?: flowOf(emptyList())
+        ).collectAsStateWithLifecycle(initialValue = emptyList())
 
     val genericUnits = remember {
         listOf(
@@ -92,6 +97,14 @@ fun CreateQuotationScreen(
         mutableLongStateOf(
             quotationToEdit?.customerId ?: preSelectedCustomerId ?: customers.firstOrNull()?.id ?: 0L
         )
+    }
+
+    LaunchedEffect(preSelectedCustomerId, quotationToEdit, customers) {
+        selectedCustomerId = quotationToEdit?.customerId
+            ?: preSelectedCustomerId
+            ?: selectedCustomerId.takeIf { it > 0 }
+            ?: customers.firstOrNull()?.id
+            ?: 0L
     }
 
     val displayQuotationNum = remember(quotationToEdit) {
@@ -121,6 +134,12 @@ fun CreateQuotationScreen(
     var rateError by remember { mutableStateOf<String?>(null) }
 
     val statusOptions = listOf("Draft", "Sent", "Approved", "Rejected")
+
+    LaunchedEffect(quotationIdToEdit, existingLineItems) {
+        if (quotationIdToEdit != null && lineItems.isEmpty() && existingLineItems.isNotEmpty()) {
+            lineItems = existingLineItems
+        }
+    }
 
     fun updateSubtotalFromLineItems(items: List<InvoiceLineItem>) {
         if (items.isNotEmpty()) {

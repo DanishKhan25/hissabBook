@@ -22,6 +22,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +49,13 @@ fun StockInDialog(
 
     var selectedItemId by remember(preSelectedItem) {
         mutableLongStateOf(preSelectedItem ?: items.firstOrNull()?.id ?: 0L)
+    }
+
+    LaunchedEffect(preSelectedItem, items) {
+        selectedItemId = preSelectedItem
+            ?: selectedItemId.takeIf { it > 0 }
+            ?: items.firstOrNull()?.id
+            ?: 0L
     }
 
     val selectedItem = items.find { it.id == selectedItemId }

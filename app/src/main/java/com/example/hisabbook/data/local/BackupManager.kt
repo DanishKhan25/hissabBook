@@ -167,8 +167,8 @@ object BackupManager {
             val obj = root.getJSONObject("businessProfile")
             BusinessProfile(
                 id = obj.optInt("id", 1),
-                businessName = obj.optString("businessName", "IMAGE ALUMINIUM AND GLASS"),
-                subtitle = obj.optString("subtitle", "Fabrication, Sliding Windows & Toughened Glass Works"),
+                businessName = obj.optString("businessName", ""),
+                subtitle = obj.optString("subtitle", ""),
                 description = obj.optString("description", ""),
                 phone = obj.optString("phone", ""),
                 address = obj.optString("address", ""),

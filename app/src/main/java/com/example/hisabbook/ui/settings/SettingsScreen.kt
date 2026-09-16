@@ -179,12 +179,12 @@ fun SettingsScreen(
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_logo),
-                        contentDescription = "IMAGE ALUMINIUM AND GLASS Logo",
+                        contentDescription = "HisabBook Logo",
                         modifier = Modifier.size(56.dp)
                     )
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = businessName.ifBlank { stringResource(R.string.business_name_default) },
+                            text = businessName.ifBlank { stringResource(R.string.app_name) },
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -282,6 +282,7 @@ fun SettingsScreen(
                         value = businessName,
                         onValueChange = { businessName = it },
                         label = { Text(stringResource(R.string.business_name) + " *") },
+                        placeholder = { Text(stringResource(R.string.business_name_placeholder)) },
                         leadingIcon = { Icon(Icons.Rounded.Business, contentDescription = null) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -292,6 +293,7 @@ fun SettingsScreen(
                         value = subtitle,
                         onValueChange = { subtitle = it },
                         label = { Text(stringResource(R.string.business_subtitle)) },
+                        placeholder = { Text(stringResource(R.string.tagline_placeholder)) },
                         leadingIcon = { Icon(Icons.Rounded.Subtitles, contentDescription = null) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),

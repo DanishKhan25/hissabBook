@@ -59,20 +59,20 @@ fun OnboardingScreen(
     val context = LocalContext.current
     val businessProfile by settingsViewModel.businessProfile.collectAsStateWithLifecycle()
 
-    var businessName by remember { mutableStateOf("Business Name") }
-    var subtitle by remember { mutableStateOf("Subtitle") }
-    var phone by remember { mutableStateOf("999999999") }
+    var businessName by remember { mutableStateOf("") }
+    var subtitle by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
     var gstNumber by remember { mutableStateOf("") }
     var selectedLanguage by remember { mutableStateOf("en") }
 
     LaunchedEffect(businessProfile) {
         businessProfile?.let { profile ->
-            if (profile.businessName.isNotBlank()) businessName = profile.businessName
-            if (profile.subtitle.isNotBlank()) subtitle = profile.subtitle
-            if (profile.phone.isNotBlank()) phone = profile.phone
-            if (profile.address.isNotBlank()) address = profile.address
-            if (profile.gstNumber.isNotBlank()) gstNumber = profile.gstNumber
+            businessName = profile.businessName
+            subtitle = profile.subtitle
+            phone = profile.phone
+            address = profile.address
+            gstNumber = profile.gstNumber
             selectedLanguage = profile.languagePreference
         }
     }
@@ -210,6 +210,7 @@ fun OnboardingScreen(
                         value = businessName,
                         onValueChange = { businessName = it },
                         label = { Text(stringResource(R.string.business_name) + " *") },
+                        placeholder = { Text(stringResource(R.string.business_name_placeholder)) },
                         leadingIcon = { Icon(Icons.Rounded.Business, contentDescription = null) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -220,6 +221,7 @@ fun OnboardingScreen(
                         value = subtitle,
                         onValueChange = { subtitle = it },
                         label = { Text(stringResource(R.string.business_subtitle)) },
+                        placeholder = { Text(stringResource(R.string.tagline_placeholder)) },
                         leadingIcon = { Icon(Icons.Rounded.Subtitles, contentDescription = null) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -266,15 +268,13 @@ fun OnboardingScreen(
             // Get Started Button
             Button(
                 onClick = {
-                    val finalName = businessName.ifBlank { "IMAGE ALUMINIUM AND GLASS" }
-                    val finalSubtitle = subtitle.ifBlank { "Fabrication, Sliding Windows & Toughened Glass Works" }
                     settingsViewModel.saveBusinessProfile(
-                        businessName = finalName,
-                        subtitle = finalSubtitle,
+                        businessName = businessName.trim(),
+                        subtitle = subtitle.trim(),
                         description = "",
-                        phone = phone,
-                        address = address,
-                        gstNumber = gstNumber,
+                        phone = phone.trim(),
+                        address = address.trim(),
+                        gstNumber = gstNumber.trim(),
                         languagePreference = selectedLanguage,
                         onSuccess = onOnboardingComplete
                     )

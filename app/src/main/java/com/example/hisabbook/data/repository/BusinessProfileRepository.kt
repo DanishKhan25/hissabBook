@@ -19,9 +19,9 @@ class BusinessProfileRepository(
         var profile = businessProfileDao.getBusinessProfileOneShot()
         if (profile == null) {
             profile = BusinessProfile(
-                businessName = "Business Name",
-                subtitle = "Subtitle",
-                phone = "88888888",
+                businessName = "",
+                subtitle = "",
+                phone = "",
                 address = "",
                 languagePreference = "en",
                 isOnboardingCompleted = false

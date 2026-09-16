@@ -16,10 +16,10 @@ object DemoDataSeeder {
     fun getDemoBusinessProfile(): BusinessProfile {
         return BusinessProfile(
             id = 1,
-            businessName = "IMAGE ALUMINIUM AND GLASS",
-            subtitle = "Fabrication, Sliding Windows & Toughened Glass Works",
-            description = "High Quality Aluminium Fabrication, Glass Fittings & Hardware",
-            phone = "8999127482",
+            businessName = "HisabBook Business",
+            subtitle = "Smart Ledger & Invoicing",
+            description = "General Trading & Business Ledger",
+            phone = "9876543210",
             address = "",
             gstNumber = "",
             languagePreference = "en",
@@ -155,10 +155,10 @@ object DemoDataSeeder {
         db.businessProfileDao().insertOrUpdateBusinessProfile(
             BusinessProfile(
                 id = 1,
-                businessName = "IMAGE ALUMINIUM AND GLASS",
-                subtitle = "Fabrication, Sliding Windows & Toughened Glass Works",
+                businessName = "",
+                subtitle = "",
                 description = "",
-                phone = "8999127482",
+                phone = "",
                 address = "",
                 languagePreference = "en",
                 currencySymbol = "₹",

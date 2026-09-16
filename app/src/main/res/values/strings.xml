@@ -70,6 +70,8 @@
     <string name="get_started">Get Started</string>
     <string name="app_tagline_default">Tagline</string>
     <string name="business_name_default">Business Name</string>
+    <string name="business_name_placeholder">Enter business name&#8230;</string>
+    <string name="tagline_placeholder">Enter tagline&#8230;</string>
 
     <!-- Backup & Restore -->
     <string name="backup_data">Backup Data</string>

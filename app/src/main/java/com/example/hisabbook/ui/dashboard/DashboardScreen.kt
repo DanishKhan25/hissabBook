@@ -110,17 +110,19 @@ fun DashboardScreen(
                         )
                         Column {
                             Text(
-                                text = profile?.businessName ?: stringResource(R.string.business_name_default),
+                                text = profile?.businessName?.ifBlank { stringResource(R.string.app_name) } ?: stringResource(R.string.app_name),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1
                             )
-                            Text(
-                                text = profile?.subtitle ?: stringResource(R.string.app_tagline_default),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1
-                            )
+                            if (!profile?.subtitle.isNullOrBlank()) {
+                                Text(
+                                    text = profile?.subtitle.orEmpty(),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1
+                                )
+                            }
                         }
                     }
                 },

@@ -121,7 +121,7 @@ fun InvoiceDetailScreen(
             payments = payments,
             businessProfile = businessProfile
         )
-        val bName = businessProfile?.businessName?.ifBlank { "IMAGE ALUMINIUM AND GLASS" } ?: "IMAGE ALUMINIUM AND GLASS"
+        val bName = businessProfile?.businessName?.ifBlank { "Business Name" } ?: "Business Name"
         val custName = customer?.name?.ifBlank { "Customer" } ?: "Customer"
         PdfShareHelper.shareToWhatsApp(
             context = context,

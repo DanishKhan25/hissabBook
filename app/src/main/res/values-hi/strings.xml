@@ -68,8 +68,10 @@
     <string name="onboarding_subtitle">शुरू करने के लिए अपनी व्यापार प्रोफ़ाइल सेट करें</string>
     <string name="select_language">भाषा चुनें</string>
     <string name="get_started">शुरू करें</string>
-    <string name="app_tagline_default">फैब्रिकेशन, स्लाइडिंग विंडोज और टफन्ड ग्लास वर्क</string>
-    <string name="business_name_default">IMAGE ALUMINIUM AND GLASS</string>
+    <string name="app_tagline_default">टैगलाइन</string>
+    <string name="business_name_default">व्यापार का नाम</string>
+    <string name="business_name_placeholder">व्यापार का नाम दर्ज करें&#8230;</string>
+    <string name="tagline_placeholder">टैगलाइन दर्ज करें&#8230;</string>
 
     <!-- Backup & Restore -->
     <string name="backup_data">डेटा बैकअप लें</string>

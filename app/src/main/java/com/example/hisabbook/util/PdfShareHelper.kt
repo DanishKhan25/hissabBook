@@ -30,7 +30,7 @@ object PdfShareHelper {
 
         val formattedAmount = CurrencyFormatter.formatAmountOnly(amount)
         val safeCustomerName = customerName.ifBlank { "Customer" }
-        val safeBusinessName = businessName.ifBlank { "IMAGE ALUMINIUM AND GLASS" }
+        val safeBusinessName = businessName.ifBlank { "Business Name" }
 
         val caption = "Hello $safeCustomerName, please find attached $docType #$docNumber for ₹$formattedAmount from $safeBusinessName."
 

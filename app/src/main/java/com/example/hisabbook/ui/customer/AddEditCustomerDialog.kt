@@ -24,14 +24,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.hisabbook.data.local.entity.Customer
 
+// Added default lambda values for onDismissRequest and onSaveCustomer so Compose Preview can instantiate the composable without NullPointerException
 @Composable
+@Preview
 fun AddEditCustomerDialog(
     customerToEdit: Customer? = null,
-    onDismissRequest: () -> Unit,
-    onSaveCustomer: (id: Long, name: String, phone: String, address: String, onError: (String) -> Unit) -> Unit
+    onDismissRequest: () -> Unit = {},
+    onSaveCustomer: (id: Long, name: String, phone: String, address: String, onError: (String) -> Unit) -> Unit = { _, _, _, _, _ -> }
 ) {
     var name by remember(customerToEdit) { mutableStateOf(customerToEdit?.name ?: "") }
     var phone by remember(customerToEdit) { mutableStateOf(customerToEdit?.phone ?: "") }

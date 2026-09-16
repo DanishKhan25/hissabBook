@@ -7,10 +7,10 @@ import androidx.room.PrimaryKey
 data class BusinessProfile(
     @PrimaryKey
     val id: Int = 1,
-    val businessName: String = "Business Name",
-    val subtitle: String = "Subtitle",
+    val businessName: String = "",
+    val subtitle: String = "",
     val description: String = "",
-    val phone: String = "9999999999",
+    val phone: String = "",
     val address: String = "",
     val languagePreference: String = "en", // "en" or "hi"
     val currencySymbol: String = "₹",

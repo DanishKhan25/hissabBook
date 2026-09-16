@@ -278,20 +278,22 @@ object PdfGenerator {
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             isAntiAlias = true
         }
-        val businessName = businessProfile?.businessName?.ifEmpty { "Business Name" } ?: "Business Name"
+        val businessName = businessProfile?.businessName?.ifBlank { "Business Name" } ?: "Business Name"
         canvas.drawText(businessName, MARGIN, y, titlePaint)
 
         y += 15f
 
-        // 3. Subtitle: "Mobile: 8999127482"
+        // 3. Subtitle / Tagline & Mobile
         val subtitlePaint = Paint().apply {
             color = Color.parseColor(COLOR_MUTED_TEXT)
             textSize = 9.5f
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
             isAntiAlias = true
         }
-        val phoneStr = businessProfile?.phone?.ifEmpty { "8999127482" } ?: "8999127482"
-        canvas.drawText("Mobile: $phoneStr", MARGIN, y, subtitlePaint)
+        val subtitleStr = businessProfile?.subtitle?.ifBlank { "Business Tagline" } ?: "Business Tagline"
+        val phoneStr = businessProfile?.phone?.ifBlank { "" } ?: ""
+        val subtitleLine = if (phoneStr.isNotBlank()) "$subtitleStr  •  Mobile: $phoneStr" else subtitleStr
+        canvas.drawText(subtitleLine, MARGIN, y, subtitlePaint)
 
         y += 12f
 

@@ -6,186 +6,125 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Outer Frame Drop Shadow / Glow -->
+    <!-- Outer Drop Shadow -->
     <path
-        android:pathData="M29,25 L79,25 C82,25 84,27 84,30 L84,80 C84,83 82,85 79,85 L29,85 C26,85 24,83 24,80 L24,30 C24,27 26,25 29,25 Z"
-        android:fillColor="#33000000" />
+        android:pathData="M28,26 L78,26 C82,26 84,28 84,32 L84,78 C84,82 82,84 78,84 L28,84 C24,84 22,82 22,78 L22,32 C22,28 24,26 28,26 Z"
+        android:fillColor="#40000000" />
 
-    <!-- 1. Outer Aluminium Frame (Golden Yellow Metallic Gradient) -->
-    <path android:pathData="M29,25 L79,25 C82,25 84,27 84,30 L84,80 C84,83 82,85 79,85 L29,85 C26,85 24,83 24,80 L24,30 C24,27 26,25 29,25 Z">
+    <!-- 1. Modern Ledger Book Cover (Vibrant Indigo Gradient) -->
+    <path android:pathData="M28,26 L78,26 C82,26 84,28 84,32 L84,78 C84,82 82,84 78,84 L28,84 C24,84 22,82 22,78 L22,32 C22,28 24,26 28,26 Z">
         <aapt:attr name="android:fillColor">
             <gradient
-                android:startX="24"
-                android:startY="25"
+                android:startX="22"
+                android:startY="26"
                 android:endX="84"
-                android:endY="85"
+                android:endY="84"
+                android:type="linear">
+                <item android:color="#FF3B82F6" android:offset="0.0" />
+                <item android:color="#FF2563EB" android:offset="0.5" />
+                <item android:color="#FF1D4ED8" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- 2. Amber Gold Book Spine (Left Accent Strip) -->
+    <path android:pathData="M22,32 C22,28 24,26 28,26 L33,26 L33,84 L28,84 C24,84 22,82 22,78 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="22"
+                android:startY="26"
+                android:endX="33"
+                android:endY="84"
                 android:type="linear">
                 <item android:color="#FFF59E0B" android:offset="0.0" />
-                <item android:color="#FFD4AF37" android:offset="0.4" />
-                <item android:color="#FFC5A028" android:offset="0.7" />
-                <item android:color="#FFB4881B" android:offset="1.0" />
+                <item android:color="#FFD97706" android:offset="1.0" />
             </gradient>
         </aapt:attr>
     </path>
 
-    <!-- Inner Frame Cutout / Dark Border Housing -->
-    <path
-        android:pathData="M29,30 L79,30 L79,80 L29,80 Z"
-        android:fillColor="#FF1E293B" />
+    <!-- Gold Binder Ring Details -->
+    <path android:pathData="M21,36 L34,36 L34,39 L21,39 Z" android:fillColor="#FFFBBF24" />
+    <path android:pathData="M21,53 L34,53 L34,56 L21,56 Z" android:fillColor="#FFFBBF24" />
+    <path android:pathData="M21,70 L34,70 L34,73 L21,73 Z" android:fillColor="#FFFBBF24" />
 
-    <!-- 2. Toughened Glass Panes (Pure Glass Cyan Gradient) -->
-    <!-- Top-Left Glass Pane -->
-    <path android:pathData="M31,32 L52,32 L52,52 L31,52 Z">
+    <!-- 3. Open Invoice Sheet Page (Clean Slate White) -->
+    <path android:pathData="M37,30 L80,30 C81.5,30 82,30.5 82,32 L82,78 C82,79.5 81.5,80 80,80 L37,80 C35.5,80 35,79.5 35,78 L35,32 C35,30.5 35.5,30 37,30 Z">
         <aapt:attr name="android:fillColor">
             <gradient
-                android:startX="31"
-                android:startY="32"
-                android:endX="52"
-                android:endY="52"
+                android:startX="35"
+                android:startY="30"
+                android:endX="82"
+                android:endY="80"
                 android:type="linear">
-                <item android:color="#E600B4D8" android:offset="0.0" />
-                <item android:color="#CC0077B6" android:offset="1.0" />
+                <item android:color="#FFFFFF" android:offset="0.0" />
+                <item android:color="#FFF8FAFC" android:offset="1.0" />
             </gradient>
         </aapt:attr>
     </path>
 
-    <!-- Top-Right Glass Pane -->
-    <path android:pathData="M56,32 L77,32 L77,52 L56,52 Z">
+    <!-- 4. Stylized "H" Monogram Header (Deep Slate & Vibrant Indigo) -->
+    <!-- Left Pillar -->
+    <path android:pathData="M40,36 L45,36 L45,58 L40,58 Z" android:fillColor="#FF0F172A" />
+    <!-- Right Pillar -->
+    <path android:pathData="M51,36 L56,36 L56,58 L51,58 Z" android:fillColor="#FF2563EB" />
+    <!-- Amber Gold / Emerald Cross Bridge Bar -->
+    <path android:pathData="M43,45 L54,45 L54,49 L43,49 Z">
         <aapt:attr name="android:fillColor">
             <gradient
-                android:startX="56"
-                android:startY="32"
-                android:endX="77"
-                android:endY="52"
-                android:type="linear">
-                <item android:color="#E690E0EF" android:offset="0.0" />
-                <item android:color="#CC00B4D8" android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
-
-    <!-- Bottom-Left Glass Pane -->
-    <path android:pathData="M31,56 L52,56 L52,77 L31,77 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:startX="31"
-                android:startY="56"
-                android:endX="52"
-                android:endY="77"
-                android:type="linear">
-                <item android:color="#CC0077B6" android:offset="0.0" />
-                <item android:color="#E600B4D8" android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
-
-    <!-- Bottom-Right Glass Pane -->
-    <path android:pathData="M56,56 L77,56 L77,77 L56,77 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:startX="56"
-                android:startY="56"
-                android:endX="77"
-                android:endY="77"
-                android:type="linear">
-                <item android:color="#E600B4D8" android:offset="0.0" />
-                <item android:color="#CC03045E" android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
-
-    <!-- 3. Glass Glare / Diagonal Light Reflection Sheen -->
-    <!-- Top-Left diagonal sheen -->
-    <path
-        android:pathData="M31,32 L48,32 L31,49 Z"
-        android:fillColor="#66FFFFFF" />
-    <path
-        android:pathData="M56,32 L70,32 L56,46 Z"
-        android:fillColor="#55FFFFFF" />
-
-    <!-- Long diagonal glass shine beam -->
-    <path
-        android:pathData="M42,32 L52,32 L31,53 L31,43 Z"
-        android:fillColor="#40FFFFFF" />
-    <path
-        android:pathData="M66,32 L77,32 L31,78 L31,68 Z"
-        android:fillColor="#30FFFFFF" />
-    <path
-        android:pathData="M56,58 L75,77 L65,77 L56,68 Z"
-        android:fillColor="#35FFFFFF" />
-
-    <!-- 4. Centre Mullion Grid (Aluminium Structural Cross Bars) -->
-    <!-- Vertical Gold Bar -->
-    <path android:pathData="M52,25 L56,25 L56,85 L52,85 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:startX="52"
-                android:startY="25"
-                android:endX="56"
-                android:endY="85"
-                android:type="linear">
-                <item android:color="#FFF59E0B" android:offset="0.0" />
-                <item android:color="#FFD4AF37" android:offset="0.5" />
-                <item android:color="#FFC5A028" android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
-
-    <!-- Horizontal Gold Bar -->
-    <path android:pathData="M24,52 L84,52 L84,56 L24,56 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:startX="24"
-                android:startY="52"
-                android:endX="84"
-                android:endY="56"
-                android:type="linear">
-                <item android:color="#FFF59E0B" android:offset="0.0" />
-                <item android:color="#FFD4AF37" android:offset="0.5" />
-                <item android:color="#FFC5A028" android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
-
-    <!-- Metallic Mullion Bevel Strokes -->
-    <path
-        android:pathData="M52,25 L52,85 M24,52 L84,52"
-        android:strokeWidth="0.8"
-        android:strokeColor="#FFFFF176" />
-    <path
-        android:pathData="M56,25 L56,85 M24,56 L84,56"
-        android:strokeWidth="0.8"
-        android:strokeColor="#FF78350F" />
-
-    <!-- 5. Central Brand Crest / Diamond "I" Emblem -->
-    <!-- Outer Diamond Frame (Gold) -->
-    <path
-        android:pathData="M54,41 L67,54 L54,67 L41,54 Z"
-        android:fillColor="#FF2C3E50" />
-    <path
-        android:pathData="M54,43 L65,54 L54,65 L43,54 Z"
-        android:fillColor="#FFD4AF37" />
-
-    <!-- Inner Diamond (Pure Cyan Glass) -->
-    <path android:pathData="M54,45 L63,54 L54,63 L45,54 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:startX="45"
+                android:startX="43"
                 android:startY="45"
-                android:endX="63"
-                android:endY="63"
+                android:endX="54"
+                android:endY="49"
                 android:type="linear">
-                <item android:color="#FF00B4D8" android:offset="0.0" />
-                <item android:color="#FF0077B6" android:offset="1.0" />
+                <item android:color="#FFF59E0B" android:offset="0.0" />
+                <item android:color="#FF10B981" android:offset="1.0" />
             </gradient>
         </aapt:attr>
     </path>
 
-    <!-- Stylized "I" Monogram (Aluminium & Glass Beam) -->
+    <!-- 5. Invoice Checklist Symbol & Lines -->
+    <!-- Item 1 Checkmark (Emerald Success) -->
     <path
-        android:pathData="M50,48 L58,48 M54,48 L54,60 M50,60 L58,60"
-        android:strokeWidth="2.2"
+        android:pathData="M61,38 L63.5,40.5 L69,35"
+        android:strokeWidth="2"
+        android:strokeColor="#FF10B981"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path android:pathData="M61,43 L77,43" android:strokeWidth="1.5" android:strokeColor="#FF94A3B8" android:strokeLineCap="round" />
+
+    <!-- Item 2 Checkmark (Emerald Success) -->
+    <path
+        android:pathData="M61,48 L63.5,50.5 L69,45"
+        android:strokeWidth="2"
+        android:strokeColor="#FF10B981"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path android:pathData="M61,53 L77,53" android:strokeWidth="1.5" android:strokeColor="#FF94A3B8" android:strokeLineCap="round" />
+
+    <!-- Ledger Total Divider Line -->
+    <path android:pathData="M40,62 L77,62" android:strokeWidth="1.8" android:strokeColor="#FFCBD5E1" android:strokeLineCap="round" />
+    <path android:pathData="M40,66 L68,66" android:strokeWidth="2.5" android:strokeColor="#FF3B82F6" android:strokeLineCap="round" />
+
+    <!-- 6. Emerald Success Verification Badge (Bottom-Right) -->
+    <path android:pathData="M73,71 C77.4,71 81,67.4 81,63 C81,58.6 77.4,55 73,55 C68.6,55 65,58.6 65,63 C65,67.4 68.6,71 73,71 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="65"
+                android:startY="55"
+                android:endX="81"
+                android:endY="71"
+                android:type="linear">
+                <item android:color="#FF34D399" android:offset="0.0" />
+                <item android:color="#FF10B981" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- White Checkmark in Badge -->
+    <path
+        android:pathData="M69,63 L72,66 L77,60"
+        android:strokeWidth="2"
         android:strokeColor="#FFFFFF"
-        android:strokeLineCap="round" />
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
 
 </vector>

@@ -20,10 +20,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AddCircle
 import androidx.compose.material.icons.rounded.Clear
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Inventory
 import androidx.compose.material.icons.rounded.RemoveCircle
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -38,6 +41,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -70,6 +74,7 @@ fun InventoryListScreen(
     var showStockInDialog by remember { mutableStateOf(false) }
     var showStockOutDialog by remember { mutableStateOf(false) }
     var selectedItemForAction by remember { mutableStateOf<InventoryItem?>(null) }
+    var itemPendingDelete by remember { mutableStateOf<InventoryItem?>(null) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -206,7 +211,8 @@ fun InventoryListScreen(
                             onStockOutClick = {
                                 selectedItemForAction = item
                                 showStockOutDialog = true
-                            }
+                            },
+                            onDeleteClick = { itemPendingDelete = item }
                         )
                     }
                 }
@@ -252,6 +258,31 @@ fun InventoryListScreen(
             }
         )
     }
+
+    itemPendingDelete?.let { item ->
+        AlertDialog(
+            onDismissRequest = { itemPendingDelete = null },
+            title = { Text("Delete Item?") },
+            text = {
+                Text("Are you sure you want to delete '${item.name}'? Its stock history will also be removed.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.deleteInventoryItem(item)
+                        itemPendingDelete = null
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { itemPendingDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -259,6 +290,7 @@ fun InventoryItemCard(
     item: InventoryItem,
     onStockInClick: () -> Unit,
     onStockOutClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val isLowStock = item.quantity <= item.minimumStock
@@ -296,61 +328,73 @@ fun InventoryItemCard(
                     )
                 }
 
-                // Status Badge
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = if (isLowStock) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.secondaryContainer
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = if (isLowStock) "LOW STOCK" else "IN STOCK",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isLowStock) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSecondaryContainer,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
+                    // Status Badge
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (isLowStock) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.secondaryContainer
+                    ) {
+                        Text(
+                            text = if (isLowStock) "LOW STOCK" else "IN STOCK",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isLowStock) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+
+                    IconButton(onClick = onDeleteClick) {
+                        Icon(
+                            imageVector = Icons.Rounded.Delete,
+                            contentDescription = "Delete Item",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Quantity Display & Actions
+            Text(
+                text = "Current Quantity",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = "${CurrencyFormatter.formatAmountOnly(item.quantity)} ${item.unit}",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = if (isLowStock) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Stock Actions
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Column {
-                    Text(
-                        text = "Current Quantity",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "${CurrencyFormatter.formatAmountOnly(item.quantity)} ${item.unit}",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isLowStock) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-                    )
+                OutlinedButton(
+                    onClick = onStockOutClick,
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.Rounded.RemoveCircle, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Stock Out", style = MaterialTheme.typography.labelMedium)
                 }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(
-                        onClick = onStockOutClick,
-                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
-                    ) {
-                        Icon(Icons.Rounded.RemoveCircle, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Stock Out", style = MaterialTheme.typography.labelMedium)
-                    }
-
-                    OutlinedButton(
-                        onClick = onStockInClick,
-                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
-                    ) {
-                        Icon(Icons.Rounded.AddCircle, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Stock In", style = MaterialTheme.typography.labelMedium)
-                    }
+                OutlinedButton(
+                    onClick = onStockInClick,
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.Rounded.AddCircle, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Stock In", style = MaterialTheme.typography.labelMedium)
                 }
             }
         }
@@ -437,8 +481,8 @@ fun InventoryItemCardPreview() {
             ),
             onStockInClick = {},
             onStockOutClick = {},
+            onDeleteClick = {},
             modifier = Modifier.padding(16.dp)
         )
     }
 }
-

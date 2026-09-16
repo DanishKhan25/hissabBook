@@ -24,4 +24,7 @@ interface StockTransactionDao {
 
     @Delete
     suspend fun deleteStockTransaction(transaction: StockTransaction)
+
+    @Query("DELETE FROM stock_transactions WHERE inventoryItemId = :inventoryItemId")
+    suspend fun deleteTransactionsForItem(inventoryItemId: Long)
 }

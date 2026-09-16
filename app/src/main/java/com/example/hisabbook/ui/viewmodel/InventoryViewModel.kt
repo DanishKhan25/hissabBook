@@ -197,6 +197,13 @@ class InventoryViewModel(
         return inventoryRepository.getTransactionsForItem(itemId)
     }
 
+    fun deleteInventoryItem(item: InventoryItem) {
+        viewModelScope.launch(Dispatchers.IO) {
+            inventoryRepository.deleteInventoryItem(item)
+            _userMessage.value = "Inventory item '${item.name}' deleted"
+        }
+    }
+
     fun clearUserMessage() {
         _userMessage.value = null
     }

@@ -35,6 +35,7 @@ class InventoryRepository(
     }
 
     suspend fun deleteInventoryItem(item: InventoryItem) = withContext(Dispatchers.IO) {
+        stockTransactionDao.deleteTransactionsForItem(item.id)
         inventoryDao.deleteInventoryItem(item)
     }
 

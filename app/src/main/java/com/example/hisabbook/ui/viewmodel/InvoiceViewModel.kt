@@ -147,6 +147,7 @@ class InvoiceViewModel(
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             val billNum = generateNextBillNumber()
+            val customerName = customerRepository.getCustomerByIdOneShot(customerId)?.name.orEmpty()
             val id = invoiceRepository.createInvoice(
                 customerId = customerId,
                 billNumber = billNum,
@@ -164,7 +165,14 @@ class InvoiceViewModel(
                         inventoryItemId = lineItem.inventoryItemId,
                         type = "STOCK_OUT",
                         quantity = lineItem.quantity,
-                        reason = "Bill #$billNum",
+                        reason = buildString {
+                            append("Bill #")
+                            append(billNum)
+                            if (customerName.isNotBlank()) {
+                                append(" | Customer: ")
+                                append(customerName)
+                            }
+                        },
                         reference = billNum
                     )
                 }

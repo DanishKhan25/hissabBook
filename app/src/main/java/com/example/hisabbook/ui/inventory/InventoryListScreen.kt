@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AddCircle
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Inventory
 import androidx.compose.material.icons.rounded.RemoveCircle
 import androidx.compose.material.icons.rounded.Search
@@ -31,6 +33,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -55,9 +58,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.hisabbook.data.local.entity.InventoryItem
+import com.example.hisabbook.data.local.entity.StockTransaction
 import com.example.hisabbook.ui.theme.HisabBookTheme
 import com.example.hisabbook.ui.viewmodel.InventoryViewModel
 import com.example.hisabbook.util.CurrencyFormatter
+import com.example.hisabbook.util.DateUtils
 
 @Composable
 fun InventoryListScreen(
@@ -73,6 +78,7 @@ fun InventoryListScreen(
     var showAddItemDialog by remember { mutableStateOf(false) }
     var showStockInDialog by remember { mutableStateOf(false) }
     var showStockOutDialog by remember { mutableStateOf(false) }
+    var showStockHistoryDialog by remember { mutableStateOf(false) }
     var selectedItemForAction by remember { mutableStateOf<InventoryItem?>(null) }
     var itemPendingDelete by remember { mutableStateOf<InventoryItem?>(null) }
 
@@ -212,6 +218,10 @@ fun InventoryListScreen(
                                 selectedItemForAction = item
                                 showStockOutDialog = true
                             },
+                            onHistoryClick = {
+                                selectedItemForAction = item
+                                showStockHistoryDialog = true
+                            },
                             onDeleteClick = { itemPendingDelete = item }
                         )
                     }
@@ -259,6 +269,20 @@ fun InventoryListScreen(
         )
     }
 
+    if (showStockHistoryDialog) {
+        selectedItemForAction?.let { item ->
+            val transactions by viewModel.getItemTransactions(item.id).collectAsStateWithLifecycle(emptyList())
+            StockHistoryDialog(
+                item = item,
+                transactions = transactions,
+                onDismissRequest = {
+                    showStockHistoryDialog = false
+                    selectedItemForAction = null
+                }
+            )
+        }
+    }
+
     itemPendingDelete?.let { item ->
         AlertDialog(
             onDismissRequest = { itemPendingDelete = null },
@@ -290,6 +314,7 @@ fun InventoryItemCard(
     item: InventoryItem,
     onStockInClick: () -> Unit,
     onStockOutClick: () -> Unit,
+    onHistoryClick: () -> Unit,
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -397,7 +422,163 @@ fun InventoryItemCard(
                     Text("Stock In", style = MaterialTheme.typography.labelMedium)
                 }
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick = onHistoryClick,
+                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Rounded.History, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("History", style = MaterialTheme.typography.labelMedium)
+            }
         }
+    }
+}
+
+@Composable
+fun StockHistoryDialog(
+    item: InventoryItem,
+    transactions: List<StockTransaction>,
+    onDismissRequest: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text("Stock History") },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 420.dp)
+            ) {
+                Text(
+                    text = item.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Current: ${CurrencyFormatter.formatAmountOnly(item.quantity)} ${item.unit}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (transactions.isEmpty()) {
+                    Text(
+                        text = "No stock history recorded yet.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(transactions, key = { it.id }) { transaction ->
+                            StockHistoryRow(
+                                transaction = transaction,
+                                unit = item.unit
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text("Close")
+            }
+        }
+    )
+}
+
+@Composable
+fun StockHistoryRow(
+    transaction: StockTransaction,
+    unit: String,
+    modifier: Modifier = Modifier
+) {
+    val isStockIn = transaction.type.equals("IN", ignoreCase = true)
+    val isBillSale = !isStockIn && transaction.reason.startsWith("Bill #", ignoreCase = true)
+    val customerName = transaction.reason
+        .substringAfter("Customer:", missingDelimiterValue = "")
+        .trim()
+    val displayReason = transaction.reason
+        .substringBefore("|")
+        .trim()
+    val typeLabel = when {
+        isStockIn -> "Stock In"
+        isBillSale -> "Sold in Bill"
+        else -> "Stock Out"
+    }
+    val signedQuantity = "${if (isStockIn) "+" else "-"}${CurrencyFormatter.formatAmountOnly(transaction.quantity)} $unit"
+    val typeColor = if (isStockIn) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = typeLabel,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = typeColor
+                )
+                Text(
+                    text = DateUtils.formatDateTime(transaction.date),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Text(
+                text = signedQuantity,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = typeColor
+            )
+        }
+
+        if (!isBillSale && displayReason.isNotBlank()) {
+            Text(
+                text = "Reason: $displayReason",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        if (customerName.isNotBlank()) {
+            Text(
+                text = "Customer: $customerName",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        if (transaction.reference.isNotBlank()) {
+            Text(
+                text = if (isBillSale) "Bill: ${transaction.reference}" else "Reference: ${transaction.reference}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        if (transaction.purchasePrice > 0) {
+            Text(
+                text = "Price: ${CurrencyFormatter.formatCurrency(transaction.purchasePrice)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+        HorizontalDivider()
     }
 }
 
@@ -481,6 +662,7 @@ fun InventoryItemCardPreview() {
             ),
             onStockInClick = {},
             onStockOutClick = {},
+            onHistoryClick = {},
             onDeleteClick = {},
             modifier = Modifier.padding(16.dp)
         )

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import com.example.hisabbook.ui.inventory.SearchableInventoryPicker
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -113,7 +114,6 @@ fun CreateQuotationScreen(
     var unitState by remember { mutableStateOf("pcs") }
     var itemQuantityState by remember { mutableStateOf("1") }
 
-    var inventoryDropdownExpanded by remember { mutableStateOf(false) }
     var showAddNewCustomerDialog by remember { mutableStateOf(false) }
 
     var descriptionError by remember { mutableStateOf<String?>(null) }
@@ -258,54 +258,17 @@ fun CreateQuotationScreen(
                     }
 
                     if (itemMode == "INVENTORY") {
-                        // Inventory Item Picker Dropdown
-                        ExposedDropdownMenuBox(
-                            expanded = inventoryDropdownExpanded,
-                            onExpandedChange = { inventoryDropdownExpanded = it }
-                        ) {
-                            val currentItemLabel = selectedInventoryItem?.let {
-                                "${it.name} (Stock: ${CurrencyFormatter.formatAmountOnly(it.quantity)} ${it.unit})"
-                            } ?: "Select Stock Item..."
-
-                            OutlinedTextField(
-                                value = currentItemLabel,
-                                onValueChange = {},
-                                readOnly = true,
-                                label = { Text("Inventory Item") },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = inventoryDropdownExpanded) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                            )
-
-                            ExposedDropdownMenu(
-                                expanded = inventoryDropdownExpanded,
-                                onDismissRequest = { inventoryDropdownExpanded = false }
-                            ) {
-                                inventoryItems.forEach { item ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Column {
-                                                Text(item.name, fontWeight = FontWeight.Bold)
-                                                Text(
-                                                    "Stock: ${CurrencyFormatter.formatAmountOnly(item.quantity)} ${item.unit} • Rate: ${CurrencyFormatter.formatCurrency(item.purchasePrice)}",
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                            }
-                                        },
-                                        onClick = {
-                                            selectedInventoryItem = item
-                                            itemDescriptionState = item.name
-                                            unitRateState = CurrencyFormatter.formatAmountOnly(item.purchasePrice)
-                                            unitState = item.unit
-                                            itemQuantityState = "1"
-                                            inventoryDropdownExpanded = false
-                                        }
-                                    )
-                                }
+                        SearchableInventoryPicker(
+                            inventoryItems = inventoryItems,
+                            selectedItem = selectedInventoryItem,
+                            onItemSelected = { item ->
+                                selectedInventoryItem = item
+                                itemDescriptionState = item.name
+                                unitRateState = CurrencyFormatter.formatAmountOnly(item.purchasePrice)
+                                unitState = item.unit
+                                itemQuantityState = "1"
                             }
-                        }
+                        )
                     }
 
                     // Item Description input

@@ -115,6 +115,11 @@ class DashboardViewModel(
             val custName = customerMap[invoice.customerId]?.name ?: "Unknown Customer"
             val totalPaid = (paymentsByInvoice[invoice.id] ?: emptyList()).sumOf { it.amount }
             val remaining = (invoice.total - totalPaid).coerceAtLeast(0.0)
+            val displayStatus = when {
+                remaining <= 0.0 && invoice.total > 0.0 -> "PAID"
+                totalPaid > 0.0 -> "PARTIALLY_PAID"
+                else -> invoice.status
+            }
             RecentActivityItem(
                 id = invoice.id,
                 type = ActivityType.INVOICE,
@@ -124,7 +129,7 @@ class DashboardViewModel(
                 paidAmount = totalPaid,
                 remainingBalance = remaining,
                 date = invoice.createdAt,
-                status = invoice.status
+                status = displayStatus
             )
         }
 

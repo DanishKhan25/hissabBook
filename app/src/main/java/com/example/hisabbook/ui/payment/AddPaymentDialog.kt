@@ -58,6 +58,13 @@ fun AddPaymentDialog(
         mutableLongStateOf(preSelectedCustomerId ?: customersWithBalance.firstOrNull()?.customer?.id ?: 0L)
     }
 
+    LaunchedEffect(preSelectedCustomerId, customersWithBalance) {
+        selectedCustomerId = preSelectedCustomerId
+            ?: selectedCustomerId.takeIf { it > 0 }
+            ?: customersWithBalance.firstOrNull()?.customer?.id
+            ?: 0L
+    }
+
     val unpaidInvoices = paymentViewModel.getUnpaidInvoicesForCustomer(selectedCustomerId)
         .collectAsStateWithLifecycle().value
 

@@ -36,7 +36,7 @@ fun SearchableInventoryPicker(
     onItemSelected: (InventoryItem) -> Unit,
     modifier: Modifier = Modifier,
     label: String = "Select Inventory Item",
-    placeholder: String = "Type to search inventory items...",
+    placeholder: String = "Type to search inventory",
 ) {
     var expanded by remember { mutableStateOf(false) }
     var searchQuery by remember {

@@ -474,57 +474,57 @@ fun CreateQuotationScreen(
                 }
             }
 
-            // Work Description / Items summary
-            OutlinedTextField(
-                value = description,
-                onValueChange = {
-                    description = it
-                    if (it.isNotBlank()) descriptionError = null
-                },
-                label = { Text("Work Description / Summary *") },
-                placeholder = { Text("e.g. Aluminium Sliding Windows 3Track - 120 sq ft") },
-                isError = descriptionError != null,
-                supportingText = descriptionError?.let { { Text(it) } },
-                minLines = 2,
-                maxLines = 4,
-                modifier = Modifier.fillMaxWidth()
-            )
+//            // Work Description / Items summary
+//            OutlinedTextField(
+//                value = description,
+//                onValueChange = {
+//                    description = it
+//                    if (it.isNotBlank()) descriptionError = null
+//                },
+//                label = { Text("Work Description / Summary *") },
+//                placeholder = { Text("e.g. Aluminium Sliding Windows 3Track - 120 sq ft") },
+//                isError = descriptionError != null,
+//                supportingText = descriptionError?.let { { Text(it) } },
+//                minLines = 2,
+//                maxLines = 4,
+//                modifier = Modifier.fillMaxWidth()
+//            )
 
             // Quantity & Rate row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                OutlinedTextField(
-                    value = quantityText,
-                    onValueChange = { quantityText = it },
-                    label = { Text("Quantity") },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Decimal,
-                        imeAction = ImeAction.Next
-                    ),
-                    singleLine = true,
-                    modifier = Modifier.weight(1f)
-                )
-
-                OutlinedTextField(
-                    value = rateText,
-                    onValueChange = {
-                        rateText = it
-                        val clean = it.parseCleanDouble()
-                        if (clean != null && clean > 0) rateError = null
-                    },
-                    label = { Text("Rate / Amount (₹) *") },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Decimal,
-                        imeAction = ImeAction.Next
-                    ),
-                    isError = rateError != null,
-                    supportingText = rateError?.let { { Text(it) } },
-                    singleLine = true,
-                    modifier = Modifier.weight(1f)
-                )
-            }
+//            Row(
+//                modifier = Modifier.fillMaxWidth(),
+//                horizontalArrangement = Arrangement.spacedBy(12.dp)
+//            ) {
+//                OutlinedTextField(
+//                    value = quantityText,
+//                    onValueChange = { quantityText = it },
+//                    label = { Text("Quantity") },
+//                    keyboardOptions = KeyboardOptions(
+//                        keyboardType = KeyboardType.Decimal,
+//                        imeAction = ImeAction.Next
+//                    ),
+//                    singleLine = true,
+//                    modifier = Modifier.weight(1f)
+//                )
+//
+//                OutlinedTextField(
+//                    value = rateText,
+//                    onValueChange = {
+//                        rateText = it
+//                        val clean = it.parseCleanDouble()
+//                        if (clean != null && clean > 0) rateError = null
+//                    },
+//                    label = { Text("Rate / Amount (₹) *") },
+//                    keyboardOptions = KeyboardOptions(
+//                        keyboardType = KeyboardType.Decimal,
+//                        imeAction = ImeAction.Next
+//                    ),
+//                    isError = rateError != null,
+//                    supportingText = rateError?.let { { Text(it) } },
+//                    singleLine = true,
+//                    modifier = Modifier.weight(1f)
+//                )
+//            }
 
             // Discount
             OutlinedTextField(

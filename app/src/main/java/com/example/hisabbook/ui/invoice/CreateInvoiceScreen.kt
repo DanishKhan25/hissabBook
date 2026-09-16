@@ -312,7 +312,7 @@ fun CreateInvoiceScreen(
                         FilterChip(
                             selected = itemMode == "INVENTORY",
                             onClick = { itemMode = "INVENTORY" },
-                            label = { Text("a) From Inventory Stock") }
+                            label = { Text("From Inventory Stock") }
                         )
                         FilterChip(
                             selected = itemMode == "CUSTOM",
@@ -323,7 +323,7 @@ fun CreateInvoiceScreen(
                                     unitState = "pcs"
                                 }
                             },
-                            label = { Text("b) Custom / Manual Item") }
+                            label = { Text("Custom / Manual Item") }
                         )
                     }
 
@@ -412,7 +412,7 @@ fun CreateInvoiceScreen(
                         OutlinedTextField(
                             value = unitRateState,
                             onValueChange = { unitRateState = it },
-                            label = { Text("Unit Rate (₹)") },
+                            label = { Text("Rate(₹)") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true,
                             modifier = Modifier.weight(1.2f)
@@ -556,43 +556,43 @@ fun CreateInvoiceScreen(
             }
 
             // Description
-            OutlinedTextField(
-                value = description,
-                onValueChange = {
-                    description = it
-                    if (it.isNotBlank()) descriptionError = null
-                },
-                label = { Text("Bill Description / Summary *") },
-                placeholder = { Text("e.g. Aluminium Fabrication & Glass Installation") },
-                isError = descriptionError != null,
-                supportingText = descriptionError?.let { { Text(it) } },
-                minLines = 2,
-                maxLines = 4,
-                modifier = Modifier.fillMaxWidth()
-            )
+//            OutlinedTextField(
+//                value = description,
+//                onValueChange = {
+//                    description = it
+//                    if (it.isNotBlank()) descriptionError = null
+//                },
+//                label = { Text("Bill Description / Summary *") },
+//                placeholder = { Text("e.g. Aluminium Fabrication & Glass Installation") },
+//                isError = descriptionError != null,
+//                supportingText = descriptionError?.let { { Text(it) } },
+//                minLines = 2,
+//                maxLines = 4,
+//                modifier = Modifier.fillMaxWidth()
+//            )
 
             // Amount & Discount
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                OutlinedTextField(
-                    value = amountText,
-                    onValueChange = {
-                        amountText = it
-                        val clean = it.parseCleanDouble()
-                        if (clean != null && clean > 0) amountError = null
-                    },
-                    label = { Text("Subtotal / Amount (₹) *") },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Decimal,
-                        imeAction = ImeAction.Next
-                    ),
-                    isError = amountError != null,
-                    supportingText = amountError?.let { { Text(it) } },
-                    singleLine = true,
-                    modifier = Modifier.weight(1f)
-                )
+//                OutlinedTextField(
+//                    value = amountText,
+//                    onValueChange = {
+//                        amountText = it
+//                        val clean = it.parseCleanDouble()
+//                        if (clean != null && clean > 0) amountError = null
+//                    },
+//                    label = { Text("Amount (₹) *") },
+//                    keyboardOptions = KeyboardOptions(
+//                        keyboardType = KeyboardType.Decimal,
+//                        imeAction = ImeAction.Next
+//                    ),
+//                    isError = amountError != null,
+//                    supportingText = amountError?.let { { Text(it) } },
+//                    singleLine = true,
+//                    modifier = Modifier.weight(1f)
+//                )
 
                 OutlinedTextField(
                     value = discountText,

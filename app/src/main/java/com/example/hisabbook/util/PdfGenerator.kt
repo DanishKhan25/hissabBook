@@ -25,7 +25,9 @@ object PdfGenerator {
 
     // Color Palette
     private const val COLOR_GOLD = "#C59B27"
+    private const val COLOR_BLUE = "#1E40AF"
     private const val COLOR_GRAY_BG = "#F0F0F0"
+    private const val COLOR_BLUE_BG = "#F0F7FF"
     private const val COLOR_DARK_TEXT = "#1A1A1A"
     private const val COLOR_MUTED_TEXT = "#555555"
     private const val COLOR_DIVIDER = "#E2E8F0"
@@ -59,6 +61,8 @@ object PdfGenerator {
         currentY = drawTopTagAndHeader(
             canvas = canvas,
             docTypeTag = "BILL OF SUPPLY",
+            badgeText = "ORIGINAL",
+            accentColorHex = COLOR_GOLD,
             businessProfile = businessProfile,
             startY = currentY,
             context = context
@@ -72,14 +76,19 @@ object PdfGenerator {
             canvas = canvas,
             docNumberLabel = "Invoice No.:",
             docNumber = invoice.billNumber,
+            dateLabel = "Invoice Date:",
             date = dateStr,
+            dueDateLabel = "Due Date:",
             dueDate = dueDateStr,
+            bgColorHex = COLOR_GRAY_BG,
             startY = currentY
         )
 
         // 3. BILL TO Section
         currentY = drawBillToSection(
             canvas = canvas,
+            recipientTitle = "BILL TO",
+            accentColorHex = COLOR_GOLD,
             customer = customer,
             startY = currentY
         )
@@ -95,6 +104,10 @@ object PdfGenerator {
         currentY = drawItemsTable(
             canvas = canvas,
             items = parsedItems,
+            accentColorHex = COLOR_GOLD,
+            itemColHeader = "ITEMS",
+            rateColHeader = "RATE",
+            amountColHeader = "AMOUNT",
             startY = currentY
         )
 
@@ -104,6 +117,8 @@ object PdfGenerator {
             canvas = canvas,
             items = parsedItems,
             subtotal = subtotalVal,
+            subtotalLabel = "SUBTOTAL",
+            accentColorHex = COLOR_GOLD,
             startY = currentY
         )
 
@@ -117,6 +132,7 @@ object PdfGenerator {
             receivedAmount = totalPaid,
             previousBalance = previousBalance,
             notes = "",
+            isQuotation = false,
             startY = currentY
         )
 
@@ -124,6 +140,9 @@ object PdfGenerator {
 
         val outputDir = File(context.cacheDir, "documents").apply { if (!exists()) mkdirs() }
         val outputFile = File(outputDir, "Invoice_${invoice.billNumber.replace("/", "_")}.pdf")
+        if (outputFile.exists()) {
+            outputFile.delete()
+        }
 
         FileOutputStream(outputFile).use { out ->
             pdfDocument.writeTo(out)
@@ -150,7 +169,9 @@ object PdfGenerator {
         // 1. Top Tag & Business Header
         currentY = drawTopTagAndHeader(
             canvas = canvas,
-            docTypeTag = "QUOTATION",
+            docTypeTag = "QUOTATION ESTIMATE",
+            badgeText = "ESTIMATE",
+            accentColorHex = COLOR_BLUE,
             businessProfile = businessProfile,
             startY = currentY,
             context = context
@@ -164,45 +185,48 @@ object PdfGenerator {
             canvas = canvas,
             docNumberLabel = "Quotation No.:",
             docNumber = quotation.quotationNumber,
+            dateLabel = "Quotation Date:",
             date = dateStr,
+            dueDateLabel = "Valid Until:",
             dueDate = dueDateStr,
+            bgColorHex = COLOR_BLUE_BG,
             startY = currentY
         )
 
-        // 3. BILL TO Section
+        // 3. BILL TO / QUOTATION FOR Section
         currentY = drawBillToSection(
             canvas = canvas,
+            recipientTitle = "QUOTATION FOR",
+            accentColorHex = COLOR_BLUE,
             customer = customer,
             startY = currentY
         )
 
-        val itemAmount = quotation.quantity * quotation.amount
-        val parsedItems = if (!lineItems.isNullOrEmpty()) {
-            lineItems
-        } else {
-            listOf(
-                TableItem(
-                    description = quotation.description.ifEmpty { "QUOTATION ITEMS & MATERIALS" },
-                    quantity = quotation.quantity,
-                    unit = "PCS",
-                    rate = quotation.amount,
-                    amount = itemAmount
-                )
-            )
-        }
+        val parsedItems = parseItemsFromDescription(
+            rawDescription = quotation.description,
+            fallbackAmount = quotation.total,
+            customItems = lineItems
+        )
 
         // 4. Table Structure
         currentY = drawItemsTable(
             canvas = canvas,
             items = parsedItems,
+            accentColorHex = COLOR_BLUE,
+            itemColHeader = "ITEM DESCRIPTION",
+            rateColHeader = "UNIT RATE",
+            amountColHeader = "EST. AMOUNT",
             startY = currentY
         )
 
         // 5. Subtotal Bar
+        val subtotalVal = if (quotation.total > 0) quotation.total else parsedItems.sumOf { it.amount }
         currentY = drawSubtotalBar(
             canvas = canvas,
             items = parsedItems,
-            subtotal = itemAmount,
+            subtotal = subtotalVal,
+            subtotalLabel = "ESTIMATED TOTAL",
+            accentColorHex = COLOR_BLUE,
             startY = currentY
         )
 
@@ -213,6 +237,7 @@ object PdfGenerator {
             receivedAmount = 0.0,
             previousBalance = 0.0,
             notes = quotation.notes,
+            isQuotation = true,
             startY = currentY
         )
 
@@ -220,6 +245,9 @@ object PdfGenerator {
 
         val outputDir = File(context.cacheDir, "documents").apply { if (!exists()) mkdirs() }
         val outputFile = File(outputDir, "Quotation_${quotation.quotationNumber.replace("/", "_")}.pdf")
+        if (outputFile.exists()) {
+            outputFile.delete()
+        }
 
         FileOutputStream(outputFile).use { out ->
             pdfDocument.writeTo(out)
@@ -234,13 +262,15 @@ object PdfGenerator {
     private fun drawTopTagAndHeader(
         canvas: Canvas,
         docTypeTag: String,
+        badgeText: String,
+        accentColorHex: String,
         businessProfile: BusinessProfile?,
         startY: Float,
         context: Context? = null
     ): Float {
         var y = startY
 
-        // 1. Top Left Tag: "BILL OF SUPPLY" with "ORIGINAL" outline box next to it
+        // 1. Top Left Tag with badge next to it
         val tagTextPaint = Paint().apply {
             color = Color.parseColor(COLOR_DARK_TEXT)
             textSize = 10.5f
@@ -252,11 +282,11 @@ object PdfGenerator {
         val tagTextWidth = tagTextPaint.measureText(docTypeTag)
         val boxLeft = MARGIN + tagTextWidth + 10f
         val boxTop = y - 10f
-        val boxRight = boxLeft + 52f
+        val boxRight = boxLeft + 56f
         val boxBottom = y + 3f
 
         val boxOutlinePaint = Paint().apply {
-            color = Color.parseColor(COLOR_DARK_TEXT)
+            color = Color.parseColor(accentColorHex)
             style = Paint.Style.STROKE
             strokeWidth = 1f
             isAntiAlias = true
@@ -265,19 +295,19 @@ object PdfGenerator {
         canvas.drawRect(origBoxRect, boxOutlinePaint)
 
         val origTextPaint = Paint().apply {
-            color = Color.parseColor(COLOR_DARK_TEXT)
+            color = Color.parseColor(accentColorHex)
             textSize = 7.5f
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             isAntiAlias = true
         }
-        val origTextWidth = origTextPaint.measureText("ORIGINAL")
-        canvas.drawText("ORIGINAL", boxLeft + (52f - origTextWidth) / 2f, y - 1f, origTextPaint)
+        val origTextWidth = origTextPaint.measureText(badgeText)
+        canvas.drawText(badgeText, boxLeft + (56f - origTextWidth) / 2f, y - 1f, origTextPaint)
 
         y += 24f
 
-        // 2. Business Title: Bold Golden Yellow (#C59B27)
+        // 2. Business Title in Accent Color
         val titlePaint = Paint().apply {
-            color = Color.parseColor(COLOR_GOLD)
+            color = Color.parseColor(accentColorHex)
             textSize = 18f
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             isAntiAlias = true
@@ -317,13 +347,13 @@ object PdfGenerator {
             y += 12f
         }
 
-        // 4. Solid Gold Line Separator (#C59B27)
-        val goldLinePaint = Paint().apply {
-            color = Color.parseColor(COLOR_GOLD)
+        // 5. Line Separator in Accent Color
+        val accentLinePaint = Paint().apply {
+            color = Color.parseColor(accentColorHex)
             strokeWidth = 1.5f
             isAntiAlias = true
         }
-        canvas.drawLine(MARGIN, y, PAGE_WIDTH - MARGIN, y, goldLinePaint)
+        canvas.drawLine(MARGIN, y, PAGE_WIDTH - MARGIN, y, accentLinePaint)
 
         return y + 14f
     }
@@ -332,15 +362,18 @@ object PdfGenerator {
         canvas: Canvas,
         docNumberLabel: String,
         docNumber: String,
+        dateLabel: String,
         date: String,
+        dueDateLabel: String,
         dueDate: String,
+        bgColorHex: String,
         startY: Float
     ): Float {
         val barHeight = 28f
         val barRect = RectF(MARGIN, startY, PAGE_WIDTH - MARGIN, startY + barHeight)
 
         val bgPaint = Paint().apply {
-            color = Color.parseColor(COLOR_GRAY_BG)
+            color = Color.parseColor(bgColorHex)
             style = Paint.Style.FILL
             isAntiAlias = true
         }
@@ -370,13 +403,13 @@ object PdfGenerator {
         canvas.drawText(" $docNumber", col1X + lbl1Width, textY, valuePaint)
 
         // Column 2
-        canvas.drawText("Invoice Date:", col2X, textY, labelPaint)
-        val lbl2Width = labelPaint.measureText("Invoice Date:")
+        canvas.drawText(dateLabel, col2X, textY, labelPaint)
+        val lbl2Width = labelPaint.measureText(dateLabel)
         canvas.drawText(" $date", col2X + lbl2Width, textY, valuePaint)
 
         // Column 3
-        canvas.drawText("Due Date:", col3X, textY, labelPaint)
-        val lbl3Width = labelPaint.measureText("Due Date:")
+        canvas.drawText(dueDateLabel, col3X, textY, labelPaint)
+        val lbl3Width = labelPaint.measureText(dueDateLabel)
         canvas.drawText(" $dueDate", col3X + lbl3Width, textY, valuePaint)
 
         return startY + barHeight + 14f
@@ -384,6 +417,8 @@ object PdfGenerator {
 
     private fun drawBillToSection(
         canvas: Canvas,
+        recipientTitle: String,
+        accentColorHex: String,
         customer: Customer?,
         startY: Float
     ): Float {
@@ -395,7 +430,7 @@ object PdfGenerator {
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             isAntiAlias = true
         }
-        canvas.drawText("BILL TO", MARGIN, y, billToHeaderPaint)
+        canvas.drawText(recipientTitle, MARGIN, y, billToHeaderPaint)
 
         y += 14f
 
@@ -422,13 +457,13 @@ object PdfGenerator {
             y += 12f
         }
 
-        // Solid gold line separator below BILL TO
-        val goldLinePaint = Paint().apply {
-            color = Color.parseColor(COLOR_GOLD)
+        // Line separator in accent color
+        val accentLinePaint = Paint().apply {
+            color = Color.parseColor(accentColorHex)
             strokeWidth = 1.5f
             isAntiAlias = true
         }
-        canvas.drawLine(MARGIN, y, PAGE_WIDTH - MARGIN, y, goldLinePaint)
+        canvas.drawLine(MARGIN, y, PAGE_WIDTH - MARGIN, y, accentLinePaint)
 
         return y + 14f
     }
@@ -436,6 +471,10 @@ object PdfGenerator {
     private fun drawItemsTable(
         canvas: Canvas,
         items: List<TableItem>,
+        accentColorHex: String,
+        itemColHeader: String,
+        rateColHeader: String,
+        amountColHeader: String,
         startY: Float
     ): Float {
         var y = startY
@@ -445,16 +484,16 @@ object PdfGenerator {
         val colRateX = MARGIN + 410f
         val colAmtX = PAGE_WIDTH - MARGIN - 8f
 
-        val goldLinePaint = Paint().apply {
-            color = Color.parseColor(COLOR_GOLD)
+        val accentLinePaint = Paint().apply {
+            color = Color.parseColor(accentColorHex)
             strokeWidth = 1.5f
             isAntiAlias = true
         }
 
         val headerHeight = 22f
 
-        // Top Gold Line Border around Header
-        canvas.drawLine(MARGIN, y, PAGE_WIDTH - MARGIN, y, goldLinePaint)
+        // Top Line Border
+        canvas.drawLine(MARGIN, y, PAGE_WIDTH - MARGIN, y, accentLinePaint)
 
         val tableHeaderPaint = Paint().apply {
             color = Color.parseColor(COLOR_DARK_TEXT)
@@ -464,20 +503,20 @@ object PdfGenerator {
         }
 
         val headerTextY = y + 15f
-        canvas.drawText("ITEMS", colItemsX, headerTextY, tableHeaderPaint)
+        canvas.drawText(itemColHeader, colItemsX, headerTextY, tableHeaderPaint)
 
         val qtyHeaderWidth = tableHeaderPaint.measureText("QTY.")
         canvas.drawText("QTY.", colQtyX - qtyHeaderWidth, headerTextY, tableHeaderPaint)
 
-        val rateHeaderWidth = tableHeaderPaint.measureText("RATE")
-        canvas.drawText("RATE", colRateX - rateHeaderWidth, headerTextY, tableHeaderPaint)
+        val rateHeaderWidth = tableHeaderPaint.measureText(rateColHeader)
+        canvas.drawText(rateColHeader, colRateX - rateHeaderWidth, headerTextY, tableHeaderPaint)
 
-        val amtHeaderWidth = tableHeaderPaint.measureText("AMOUNT")
-        canvas.drawText("AMOUNT", colAmtX - amtHeaderWidth, headerTextY, tableHeaderPaint)
+        val amtHeaderWidth = tableHeaderPaint.measureText(amountColHeader)
+        canvas.drawText(amountColHeader, colAmtX - amtHeaderWidth, headerTextY, tableHeaderPaint)
 
         y += headerHeight
-        // Bottom Gold Line Border around Header
-        canvas.drawLine(MARGIN, y, PAGE_WIDTH - MARGIN, y, goldLinePaint)
+        // Bottom Line Border
+        canvas.drawLine(MARGIN, y, PAGE_WIDTH - MARGIN, y, accentLinePaint)
 
         val rowCellPaint = Paint().apply {
             color = Color.parseColor(COLOR_DARK_TEXT)
@@ -492,33 +531,34 @@ object PdfGenerator {
         }
 
         val rowHeight = 22f
+        val maxDescWidth = (colQtyX - 80f) - colItemsX
 
         items.forEach { item ->
             val rowTextY = y + 15f
 
-            // 1. Item Name in UPPERCASE
+            // 1. Description truncated to avoid column overlap
             val itemDesc = item.description.uppercase(Locale.ROOT)
-            canvas.drawText(itemDesc, colItemsX, rowTextY, rowCellPaint)
+            val truncatedDesc = ellipsizeText(itemDesc, maxDescWidth, rowCellPaint)
+            canvas.drawText(truncatedDesc, colItemsX, rowTextY, rowCellPaint)
 
-            // 2. QTY with Unit (e.g. "1 PCS", "3.5 KGS", "23.43 KGS")
+            // 2. QTY with Unit
             val qtyFormatted = formatQuantity(item.quantity)
             val unitFormatted = item.unit.ifBlank { "PCS" }.uppercase(Locale.ROOT)
             val qtyStr = "$qtyFormatted $unitFormatted"
             val qtyWidth = rowCellPaint.measureText(qtyStr)
             canvas.drawText(qtyStr, colQtyX - qtyWidth, rowTextY, rowCellPaint)
 
-            // 3. RATE formatted without currency symbol
+            // 3. RATE
             val rateStr = CurrencyFormatter.formatAmountOnly(item.rate)
             val rateWidth = rowCellPaint.measureText(rateStr)
             canvas.drawText(rateStr, colRateX - rateWidth, rowTextY, rowCellPaint)
 
-            // 4. AMOUNT with comma formatting
+            // 4. AMOUNT
             val amtStr = CurrencyFormatter.formatAmountOnly(item.amount)
             val amtWidth = rowCellPaint.measureText(amtStr)
             canvas.drawText(amtStr, colAmtX - amtWidth, rowTextY, rowCellPaint)
 
             y += rowHeight
-            // Subtle row divider between items
             canvas.drawLine(MARGIN, y, PAGE_WIDTH - MARGIN, y, dividerPaint)
         }
 
@@ -529,6 +569,8 @@ object PdfGenerator {
         canvas: Canvas,
         items: List<TableItem>,
         subtotal: Double,
+        subtotalLabel: String,
+        accentColorHex: String,
         startY: Float
     ): Float {
         var y = startY
@@ -537,16 +579,16 @@ object PdfGenerator {
         val colQtyX = MARGIN + 310f
         val colAmtX = PAGE_WIDTH - MARGIN - 8f
 
-        val goldLinePaint = Paint().apply {
-            color = Color.parseColor(COLOR_GOLD)
+        val accentLinePaint = Paint().apply {
+            color = Color.parseColor(accentColorHex)
             strokeWidth = 1.5f
             isAntiAlias = true
         }
 
         val subtotalRowHeight = 22f
 
-        // Top Gold Border around Subtotal
-        canvas.drawLine(MARGIN, y, PAGE_WIDTH - MARGIN, y, goldLinePaint)
+        // Top Line Border
+        canvas.drawLine(MARGIN, y, PAGE_WIDTH - MARGIN, y, accentLinePaint)
 
         val subtotalLabelPaint = Paint().apply {
             color = Color.parseColor(COLOR_DARK_TEXT)
@@ -556,23 +598,21 @@ object PdfGenerator {
         }
 
         val subtotalTextY = y + 15f
-        canvas.drawText("SUBTOTAL", colItemsX, subtotalTextY, subtotalLabelPaint)
+        canvas.drawText(subtotalLabel, colItemsX, subtotalTextY, subtotalLabelPaint)
 
-        // Total sum of item quantities
         val totalQtySum = items.sumOf { it.quantity }
         val primaryUnit = items.firstOrNull()?.unit?.ifBlank { "PCS" }?.uppercase(Locale.ROOT) ?: "PCS"
         val totalQtyStr = "${formatQuantity(totalQtySum)} $primaryUnit"
         val totalQtyWidth = subtotalLabelPaint.measureText(totalQtyStr)
         canvas.drawText(totalQtyStr, colQtyX - totalQtyWidth, subtotalTextY, subtotalLabelPaint)
 
-        // "₹ [subtotal]"
         val subtotalStr = "₹ " + CurrencyFormatter.formatAmountOnly(subtotal)
         val subtotalValWidth = subtotalLabelPaint.measureText(subtotalStr)
         canvas.drawText(subtotalStr, colAmtX - subtotalValWidth, subtotalTextY, subtotalLabelPaint)
 
         y += subtotalRowHeight
-        // Bottom Gold Border around Subtotal
-        canvas.drawLine(MARGIN, y, PAGE_WIDTH - MARGIN, y, goldLinePaint)
+        // Bottom Line Border
+        canvas.drawLine(MARGIN, y, PAGE_WIDTH - MARGIN, y, accentLinePaint)
 
         return y + 18f
     }
@@ -583,15 +623,15 @@ object PdfGenerator {
         receivedAmount: Double,
         previousBalance: Double,
         notes: String,
+        isQuotation: Boolean,
         startY: Float
     ) {
-        val footerStartY = startY
         val leftX = MARGIN
         val rightTableLeftX = 330f
         val rightTableValX = PAGE_WIDTH - MARGIN - 8f
 
         // --- Left side: TERMS AND CONDITIONS ---
-        var leftY = footerStartY
+        var leftY = startY
         val termsHeaderPaint = Paint().apply {
             color = Color.parseColor(COLOR_DARK_TEXT)
             textSize = 9.5f
@@ -607,9 +647,16 @@ object PdfGenerator {
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
             isAntiAlias = true
         }
-        canvas.drawText("1. Goods once sold will not be taken back or exchanged", leftX, leftY, termsTextPaint)
-        leftY += 12f
-        canvas.drawText("2. All disputes are subject to jurisdiction only", leftX, leftY, termsTextPaint)
+
+        if (isQuotation) {
+            canvas.drawText("1. Quotation valid for 30 days from date of issue", leftX, leftY, termsTextPaint)
+            leftY += 12f
+            canvas.drawText("2. Prices are subject to revision if scope of work changes", leftX, leftY, termsTextPaint)
+        } else {
+            canvas.drawText("1. Goods once sold will not be taken back or exchanged", leftX, leftY, termsTextPaint)
+            leftY += 12f
+            canvas.drawText("2. All disputes are subject to local jurisdiction only", leftX, leftY, termsTextPaint)
+        }
 
         if (notes.isNotEmpty()) {
             leftY += 14f
@@ -617,10 +664,7 @@ object PdfGenerator {
         }
 
         // --- Right side: Financial Summary Table ---
-        var rightY = footerStartY
-
-        val balance = (totalAmount - receivedAmount).coerceAtLeast(0.0)
-        val currBal = balance + previousBalance
+        var rightY = startY
 
         fun drawSummaryRow(label: String, amount: Double, isBold: Boolean = false) {
             val lblPaint = Paint().apply {
@@ -643,32 +687,40 @@ object PdfGenerator {
             rightY += 14f
         }
 
-        drawSummaryRow("Total Amount:", totalAmount, isBold = true)
-        drawSummaryRow("Received Amount:", receivedAmount)
-        drawSummaryRow("Balance:", balance, isBold = true)
+        if (isQuotation) {
+            drawSummaryRow("Estimated Subtotal:", totalAmount)
+            drawSummaryRow("Estimated Net Total:", totalAmount, isBold = true)
+        } else {
+            val balance = (totalAmount - receivedAmount).coerceAtLeast(0.0)
+            val currBal = balance + previousBalance
 
-        // Line separator
-        val thinLinePaint = Paint().apply {
-            color = Color.parseColor(COLOR_BORDER_GRAY)
-            strokeWidth = 0.8f
-            isAntiAlias = true
+            drawSummaryRow("Total Amount:", totalAmount, isBold = true)
+            drawSummaryRow("Received Amount:", receivedAmount)
+            drawSummaryRow("Balance:", balance, isBold = true)
+
+            val thinLinePaint = Paint().apply {
+                color = Color.parseColor(COLOR_BORDER_GRAY)
+                strokeWidth = 0.8f
+                isAntiAlias = true
+            }
+            canvas.drawLine(rightTableLeftX, rightY - 2f, PAGE_WIDTH - MARGIN, rightY - 2f, thinLinePaint)
+            rightY += 6f
+
+            drawSummaryRow("Previous Balance:", previousBalance)
+            drawSummaryRow("Current Balance:", currBal, isBold = true)
         }
-        canvas.drawLine(rightTableLeftX, rightY - 2f, PAGE_WIDTH - MARGIN, rightY - 2f, thinLinePaint)
-        rightY += 6f
-
-        drawSummaryRow("Previous Balance:", previousBalance)
-        drawSummaryRow("Current Balance:", currBal, isBold = true)
 
         rightY += 12f
 
         // --- Bottom Right: Total Amount (in words) ---
+        val wordsHeaderTitle = if (isQuotation) "Total Estimated Amount (in words)" else "Total Amount (in words)"
         val wordsHeaderPaint = Paint().apply {
             color = Color.parseColor(COLOR_DARK_TEXT)
             textSize = 9f
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             isAntiAlias = true
         }
-        canvas.drawText("Total Amount (in words)", rightTableLeftX, rightY, wordsHeaderPaint)
+        canvas.drawText(wordsHeaderTitle, rightTableLeftX, rightY, wordsHeaderPaint)
 
         rightY += 13f
 
@@ -746,6 +798,15 @@ object PdfGenerator {
         } else {
             String.format(Locale.US, "%.2f", qty).trimEnd('0').trimEnd('.')
         }
+    }
+
+    private fun ellipsizeText(text: String, maxWidth: Float, paint: Paint): String {
+        if (paint.measureText(text) <= maxWidth) return text
+        var end = text.length
+        while (end > 0 && paint.measureText(text.substring(0, end) + "...") > maxWidth) {
+            end--
+        }
+        return if (end > 0) text.substring(0, end) + "..." else text
     }
 
     private fun drawTextWrapped(

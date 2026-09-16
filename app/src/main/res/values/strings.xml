@@ -217,4 +217,38 @@
     <string name="error_customer_required">Please select a customer</string>
     <string name="error_generic">Something went wrong. Please try again.</string>
     <string name="error_insufficient_stock">Insufficient stock available</string>
+
+    <!-- Invoice Preview -->
+    <string name="bill_of_supply">BILL OF SUPPLY</string>
+    <string name="original">ORIGINAL</string>
+    <string name="invoice_no_label">Invoice No.:</string>
+    <string name="invoice_date_label">Invoice Date:</string>
+    <string name="due_date_label">Due Date:</string>
+    <string name="bill_to_label">BILL TO</string>
+    <string name="items">ITEMS</string>
+    <string name="qty_label">QTY.</string>
+    <string name="rate_label">RATE</string>
+    <string name="terms_and_conditions">TERMS AND CONDITIONS</string>
+    <string name="terms_line_1">1. Goods once sold will not be taken back or exchanged</string>
+    <string name="terms_line_2">2. All disputes are subject to [ENTER_YOUR_CITY_NAME] jurisdiction only</string>
+    <string name="received_amount">Received Amount</string>
+    <string name="balance">Balance</string>
+    <string name="previous_balance">Previous Balance</string>
+    <string name="current_balance">Current Balance</string>
+    <string name="total_amount_in_words">Total Amount (in words)</string>
+
+    <!-- Quotation Template Strings -->
+    <string name="quotation_estimate">QUOTATION ESTIMATE</string>
+    <string name="estimate_badge">ESTIMATE</string>
+    <string name="quotation_no_label">Quotation No.:</string>
+    <string name="quotation_date_label">Quotation Date:</string>
+    <string name="valid_until_label">Valid Until:</string>
+    <string name="quotation_for_label">QUOTATION FOR</string>
+    <string name="estimated_subtotal">Estimated Subtotal:</string>
+    <string name="estimated_net_total">Estimated Net Total:</string>
+    <string name="total_estimated_amount_in_words">Total Estimated Amount (in words)</string>
+    <string name="quotation_terms_line_1">1. Quotation valid for 30 days from date of issue</string>
+    <string name="quotation_terms_line_2">2. Prices are subject to revision if scope of work changes</string>
+    <string name="ad_sponsored">sponsored</string>
+    <string name="download">Download</string>
 </resources>

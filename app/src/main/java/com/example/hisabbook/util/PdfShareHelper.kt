@@ -241,6 +241,33 @@ object PdfShareHelper {
         context.startActivity(chooser)
     }
 
+    /**
+     * Opens and views a generated PDF file using the system PDF viewer.
+     */
+    fun openPdf(context: Context, file: File) {
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
+
+        val viewIntent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/pdf")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+
+        try {
+            context.startActivity(viewIntent)
+        } catch (_: ActivityNotFoundException) {
+            Toast.makeText(
+                context,
+                "No PDF viewer app found on device.",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
     private fun showWhatsAppNotInstalledToast(context: Context) {
         Toast.makeText(
             context,

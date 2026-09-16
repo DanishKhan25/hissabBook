@@ -217,4 +217,38 @@
     <string name="error_customer_required">कृपया एक ग्राहक चुनें</string>
     <string name="error_generic">कुछ गलत हो गया। कृपया पुनः प्रयास करें।</string>
     <string name="error_insufficient_stock">पर्याप्त स्टॉक उपलब्ध नहीं है</string>
+
+    <!-- Invoice Preview -->
+    <string name="bill_of_supply">बिल ऑफ सप्लाई</string>
+    <string name="original">मूल प्रति</string>
+    <string name="invoice_no_label">इनवॉइस नं.:</string>
+    <string name="invoice_date_label">इनवॉइस दिनांक:</string>
+    <string name="quotation_no_label">कोटेशन नं.:</string>
+    <string name="quotation_date_label">कोटेशन दिनांक:</string>
+    <string name="due_date_label">देय तिथि:</string>
+    <string name="bill_to_label">बिल सेवा में</string>
+    <string name="items">सामग्री</string>
+    <string name="qty_label">मात्रा</string>
+    <string name="rate_label">दर</string>
+    <string name="terms_and_conditions">नियम व शर्तें</string>
+    <string name="terms_line_1">1. बेचा गया माल वापस नहीं लिया जाएगा</string>
+    <string name="terms_line_2">2. सभी विवाद क्षेत्राधिकार के अधीन हैं</string>
+    <string name="received_amount">प्राप्त राशि</string>
+    <string name="balance">शेष राशि</string>
+    <string name="previous_balance">पिछला शेष</string>
+    <string name="current_balance">वर्तमान शेष</string>
+    <string name="total_amount_in_words">कुल राशि (शब्दों में)</string>
+
+    <!-- Quotation Template Strings -->
+    <string name="quotation_estimate">कोटेशन प्राकलन</string>
+    <string name="estimate_badge">अनुमान</string>
+    <string name="valid_until_label">वैधता तिथि:</string>
+    <string name="quotation_for_label">कोटेशन सेवा में</string>
+    <string name="estimated_subtotal">अनुमानित उप-योग:</string>
+    <string name="estimated_net_total">अनुमानित कुल देय:</string>
+    <string name="total_estimated_amount_in_words">कुल अनुमानित राशि (शब्दों में)</string>
+    <string name="quotation_terms_line_1">1. यह कोटेशन जारी होने की तिथि से 30 दिनों के लिए वैध है</string>
+    <string name="quotation_terms_line_2">2. कार्य के दायरे में बदलाव होने पर दरों में संशोधन हो सकता है</string>
+    <string name="ad_sponsored">प्रायोजित</string>
+    <string name="download">डाउनलोड</string>
 </resources>

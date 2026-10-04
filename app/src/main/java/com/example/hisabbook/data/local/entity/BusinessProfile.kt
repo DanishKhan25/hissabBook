@@ -15,5 +15,6 @@ data class BusinessProfile(
     val languagePreference: String = "en", // "en" or "hi"
     val currencySymbol: String = "₹",
     val gstNumber: String = "",
+    val businessType: String = "GENERAL",
     val isOnboardingCompleted: Boolean = false
 )

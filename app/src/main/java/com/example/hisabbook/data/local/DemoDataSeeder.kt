@@ -7,6 +7,7 @@ import com.example.hisabbook.data.local.entity.Invoice
 import com.example.hisabbook.data.local.entity.Payment
 import com.example.hisabbook.data.local.entity.Quotation
 import com.example.hisabbook.data.local.entity.StockTransaction
+import com.example.hisabbook.data.model.BusinessTypeCategory
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -36,20 +37,22 @@ object DemoDataSeeder {
         )
     }
 
+    fun getDemoInventoryItemsForCategory(categoryKey: String = "GENERAL"): List<InventoryItem> {
+        val category = BusinessTypeCategory.fromId(categoryKey)
+        return category.presetItems.mapIndexed { index, preset ->
+            InventoryItem(
+                id = (index + 1).toLong(),
+                name = preset.name,
+                unit = preset.unit,
+                quantity = 50.0,
+                minimumStock = preset.minimumStock,
+                purchasePrice = preset.defaultPrice
+            )
+        }
+    }
+
     fun getDemoInventoryItems(): List<InventoryItem> {
-        return listOf(
-            InventoryItem(id = 1, name = "BRUSH RUBBER", unit = "PCS", quantity = 100.0, minimumStock = 20.0, purchasePrice = 350.0),
-            InventoryItem(id = 2, name = "CLEAR PVC RUBBER", unit = "KGS", quantity = 50.0, minimumStock = 10.0, purchasePrice = 135.0),
-            InventoryItem(id = 3, name = "CUBEX STEEL BEARING", unit = "PCS", quantity = 200.0, minimumStock = 30.0, purchasePrice = 18.0),
-            InventoryItem(id = 4, name = "HD- ALUMINIUM", unit = "KGS", quantity = 500.0, minimumStock = 50.0, purchasePrice = 535.0),
-            InventoryItem(id = 5, name = "LOCK 44 GOLD", unit = "PCS", quantity = 50.0, minimumStock = 10.0, purchasePrice = 45.0),
-            InventoryItem(id = 6, name = "PINK BERING", unit = "PCS", quantity = 100.0, minimumStock = 15.0, purchasePrice = 11.0),
-            InventoryItem(id = 7, name = "SILCON-NEXO", unit = "PCS", quantity = 40.0, minimumStock = 5.0, purchasePrice = 120.0),
-            InventoryItem(id = 8, name = "SS STEEL KIT", unit = "PCS", quantity = 30.0, minimumStock = 5.0, purchasePrice = 140.0),
-            InventoryItem(id = 9, name = "UNI-BOND. SHEET", unit = "PCS", quantity = 20.0, minimumStock = 3.0, purchasePrice = 700.0),
-            InventoryItem(id = 10, name = "TOUGHENED GLASS 12MM", unit = "sq.ft", quantity = 300.0, minimumStock = 50.0, purchasePrice = 220.0),
-            InventoryItem(id = 11, name = "SLIDING WINDOW FRAME", unit = "meter", quantity = 150.0, minimumStock = 20.0, purchasePrice = 480.0)
-        )
+        return getDemoInventoryItemsForCategory("GENERAL")
     }
 
     fun getDemoStockTransactions(): List<StockTransaction> {

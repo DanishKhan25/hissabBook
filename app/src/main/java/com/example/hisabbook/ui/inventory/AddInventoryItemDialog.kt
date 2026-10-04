@@ -32,6 +32,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.hisabbook.data.local.entity.InventoryItem
+import com.example.hisabbook.data.model.BusinessTypeCategory
 import com.example.hisabbook.ui.theme.HisabBookTheme
 import com.example.hisabbook.util.CurrencyFormatter
 import com.example.hisabbook.util.parseCleanDoubleOrDefault
@@ -49,7 +50,7 @@ fun AddInventoryItemDialog(
 
     var nameError by remember { mutableStateOf<String?>(null) }
 
-    val commonUnits = listOf("pcs", "kg", "meter", "feet", "sq.ft", "sq.m", "box", "ltr")
+    val commonUnits = BusinessTypeCategory.ALL_UNITS
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -183,7 +184,7 @@ fun EditInventoryItemDialog(
 
     var nameError by remember { mutableStateOf<String?>(null) }
 
-    val commonUnits = listOf("pcs", "kg", "meter", "feet", "sq.ft", "sq.m", "box", "ltr")
+    val commonUnits = BusinessTypeCategory.ALL_UNITS
 
     AlertDialog(
         onDismissRequest = onDismissRequest,

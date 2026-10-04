@@ -184,12 +184,48 @@
     <string name="unit_ltr">Ltr</string>
     <string name="unit_ml">Ml</string>
     <string name="unit_meter">Meter</string>
+    <string name="unit_sqft">Sq.ft</string>
+    <string name="unit_cup">Cup</string>
+    <string name="unit_plate">Plate</string>
+    <string name="unit_hours">Hours</string>
+    <string name="unit_pair">Pair</string>
     <string name="unit_box">Box</string>
     <string name="unit_packet">Packet</string>
     <string name="unit_dozen">Dozen</string>
+    <string name="unit_strip">Strip</string>
     <string name="unit_set">Set</string>
+    <string name="unit_service">Service</string>
+    <string name="unit_day">Day</string>
     <string name="no_inventory">No inventory items found</string>
     <string name="confirm_delete_item">Are you sure you want to delete this item?</string>
+
+    <!-- Business Categories -->
+    <string name="select_business_type">Select Business Category</string>
+    <string name="select_business_type_subtitle">Choose your business type to personalize units &amp; sample inventory</string>
+    <string name="category_tea_stall">Tea Stall &amp; Cafe</string>
+    <string name="category_tea_stall_desc">Chai, Coffee, Snacks &amp; Bakery</string>
+    <string name="category_garage_mechanic">Garage &amp; Mechanic</string>
+    <string name="category_garage_mechanic_desc">Vehicle Repair, Spare Parts &amp; Services</string>
+    <string name="category_dairy_parlor">Dairy &amp; Milk Booth</string>
+    <string name="category_dairy_parlor_desc">Milk, Curd, Paneer, Ghee &amp; Sweets</string>
+    <string name="category_kirana_grocery">Kirana &amp; Grocery</string>
+    <string name="category_kirana_grocery_desc">General Store, Spices &amp; FMCG</string>
+    <string name="category_clothing_footwear">Clothing &amp; Footwear</string>
+    <string name="category_clothing_footwear_desc">Garments, Tailoring &amp; Shoes</string>
+    <string name="category_mobile_electronics">Mobile &amp; Electronics</string>
+    <string name="category_mobile_electronics_desc">Recharge, Accessories &amp; Repairs</string>
+    <string name="category_hardware_building">Hardware &amp; Building</string>
+    <string name="category_hardware_building_desc">Tools, Glass, Pipes &amp; Sanitary</string>
+    <string name="category_salon_beauty">Salon &amp; Beauty</string>
+    <string name="category_salon_beauty_desc">Haircut, Grooming &amp; Spa Services</string>
+    <string name="category_fruits_vegetables">Fruits &amp; Vegetables</string>
+    <string name="category_fruits_vegetables_desc">Fresh Produce, Juices &amp; Stalls</string>
+    <string name="category_pharmacy_medical">Pharmacy &amp; Medical</string>
+    <string name="category_pharmacy_medical_desc">Medicines, Healthcare &amp; Surgical</string>
+    <string name="category_service_provider">Services &amp; Labor</string>
+    <string name="category_service_provider_desc">Electrician, Plumber &amp; Consulting</string>
+    <string name="category_general">General Business</string>
+    <string name="category_general_desc">Custom or Multipurpose Store</string>
 
     <!-- Business Profile & Settings -->
     <string name="settings_title">Settings</string>

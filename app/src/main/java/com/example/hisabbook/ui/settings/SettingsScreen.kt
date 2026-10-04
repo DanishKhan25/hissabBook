@@ -65,6 +65,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.hisabbook.R
+import com.example.hisabbook.data.model.BusinessTypeCategory
 import com.example.hisabbook.ui.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,6 +88,7 @@ fun SettingsScreen(
     var address by remember { mutableStateOf("") }
     var gstNumber by remember { mutableStateOf("") }
     var languagePreference by remember { mutableStateOf("en") }
+    var businessType by remember { mutableStateOf("GENERAL") }
 
     var pendingRestoreUri by remember { mutableStateOf<Uri?>(null) }
     var showRestoreConfirmDialog by remember { mutableStateOf(false) }
@@ -100,6 +102,7 @@ fun SettingsScreen(
             address = p.address
             gstNumber = p.gstNumber
             languagePreference = p.languagePreference
+            businessType = p.businessType
         }
     }
 
@@ -333,6 +336,48 @@ fun SettingsScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.select_business_type),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        BusinessTypeCategory.entries.chunked(2).forEach { rowCategories ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                rowCategories.forEach { cat ->
+                                    val isSel = businessType == cat.id
+                                    FilterChip(
+                                        selected = isSel,
+                                        onClick = { businessType = cat.id },
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = cat.icon,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        },
+                                        label = {
+                                            Text(
+                                                text = stringResource(cat.titleRes),
+                                                style = MaterialTheme.typography.labelMedium
+                                            )
+                                        },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                                if (rowCategories.size == 1) {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                }
+                            }
+                        }
+                    }
+
                     Button(
                         onClick = {
                             viewModel.saveBusinessProfile(
@@ -342,7 +387,8 @@ fun SettingsScreen(
                                 phone = phone,
                                 address = address,
                                 gstNumber = gstNumber,
-                                languagePreference = languagePreference
+                                languagePreference = languagePreference,
+                                businessType = businessType
                             )
                         },
                         shape = RoundedCornerShape(16.dp),

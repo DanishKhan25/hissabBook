@@ -48,6 +48,7 @@ class SettingsViewModel(
         address: String,
         gstNumber: String,
         languagePreference: String,
+        businessType: String = "GENERAL",
         onSuccess: () -> Unit = {}
     ) {
         if (businessName.isBlank()) {
@@ -65,9 +66,20 @@ class SettingsViewModel(
                 address = address.trim(),
                 gstNumber = gstNumber.trim(),
                 languagePreference = languagePreference,
+                businessType = businessType,
                 isOnboardingCompleted = true
             )
             businessProfileRepository.updateBusinessProfile(updated)
+
+            // Seed preset items for this business type if inventory is currently empty
+            val existingItems = database.inventoryDao().getAllInventoryItemsOneShot()
+            if (existingItems.isEmpty()) {
+                val presets = DemoDataSeeder.getDemoInventoryItemsForCategory(businessType)
+                presets.forEach { item ->
+                    database.inventoryDao().insertInventoryItem(item)
+                }
+            }
+
             _userMessage.value = "Business profile updated successfully!"
             withContext(Dispatchers.Main) { onSuccess() }
         }

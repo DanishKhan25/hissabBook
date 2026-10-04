@@ -184,12 +184,48 @@
     <string name="unit_ltr">लीटर</string>
     <string name="unit_ml">मिलीलीटर</string>
     <string name="unit_meter">मीटर</string>
+    <string name="unit_sqft">वर्ग फुट</string>
+    <string name="unit_cup">कप</string>
+    <string name="unit_plate">प्लेट</string>
+    <string name="unit_hours">घंटे</string>
+    <string name="unit_pair">जोड़ी</string>
     <string name="unit_box">डिब्बा</string>
     <string name="unit_packet">पैकेट</string>
     <string name="unit_dozen">दर्जन</string>
+    <string name="unit_strip">स्ट्रिप</string>
     <string name="unit_set">सेट</string>
+    <string name="unit_service">सेवा (Service)</string>
+    <string name="unit_day">दिन</string>
     <string name="no_inventory">कोई सामान नहीं मिला</string>
     <string name="confirm_delete_item">क्या आप वाकई इस सामान को हटाना चाहते हैं?</string>
+
+    <!-- Business Categories -->
+    <string name="select_business_type">व्यापार श्रेणी चुनें</string>
+    <string name="select_business_type_subtitle">अपनी श्रेणी चुनें ताकि इकाइयां और नमूना स्टॉक स्वचालित सेट हो सकें</string>
+    <string name="category_tea_stall">टी स्टॉल व कैफे</string>
+    <string name="category_tea_stall_desc">चाय, कॉफी, नाश्ता व बेकरी</string>
+    <string name="category_garage_mechanic">गैराज व मैकेनिक</string>
+    <string name="category_garage_mechanic_desc">वाहन मरम्मत, स्पेयर पार्ट्स व सर्विस</string>
+    <string name="category_dairy_parlor">डेयरी व दूध बूथ</string>
+    <string name="category_dairy_parlor_desc">दूध, दही, पनीर, घी व मिठाई</string>
+    <string name="category_kirana_grocery">किराना व जनरल स्टोर</string>
+    <string name="category_kirana_grocery_desc">जनरल स्टोर, मसाले व एफएमसीजी</string>
+    <string name="category_clothing_footwear">कपड़ा व जूता दुकान</string>
+    <string name="category_clothing_footwear_desc">रेडीमेड वस्त्र, सिलाई टेलर व जूते</string>
+    <string name="category_mobile_electronics">मोबाइल व इलेक्ट्रॉनिक्स</string>
+    <string name="category_mobile_electronics_desc">रिचार्ज, एक्सेसरीज व रिपेयरिंग</string>
+    <string name="category_hardware_building">हार्डवेयर व बिल्डिंग</string>
+    <string name="category_hardware_building_desc">टूल्स, ग्लास, पाइप्स व सेनेटरी</string>
+    <string name="category_salon_beauty">सलून व ब्यूटी पार्लर</string>
+    <string name="category_salon_beauty_desc">हेयरकट, शेविंग व ग्रूमिंग सर्विसेज</string>
+    <string name="category_fruits_vegetables">फल व सब्जी</string>
+    <string name="category_fruits_vegetables_desc">ताजा सब्जियां, फल व जूस स्टॉल</string>
+    <string name="category_pharmacy_medical">मेडिकल व फार्मेसी</string>
+    <string name="category_pharmacy_medical_desc">दवाइयां, हेल्थकेयर व सर्जिकल सामान</string>
+    <string name="category_service_provider">सेवाएं व कारिगर</string>
+    <string name="category_service_provider_desc">इलेक्ट्रीशियन, प्लंबर व कंसल्टेंट</string>
+    <string name="category_general">सामान्य व्यापार</string>
+    <string name="category_general_desc">कस्टम अथवा अन्य सभी प्रकार की दुकानें</string>
 
     <!-- Business Profile & Settings -->
     <string name="settings_title">सेटिंग्स</string>
